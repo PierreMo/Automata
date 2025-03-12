@@ -1,0 +1,104 @@
+ALPH = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+LETTER_ID = {
+    'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9,
+    'k': 10, 'l': 11, 'm': 12, 'n': 13, 'o': 14, 'p': 15, 'q': 16, 'r': 17, 's': 18,
+    't': 19, 'u': 20, 'v': 21, 'w': 22, 'x': 23, 'y': 24, 'z': 25
+}
+
+
+class State :
+    def __init__(self, alph_size: int, state_id: int):
+        self.__in_state = False
+        self.__out_state = False
+        self.__alph_size = alph_size
+        self.__state_id = state_id
+        # TODO destinations should better be sets
+        self.__dest_states= [[] for _ in range(self.__alph_size)]
+        self.__label = None
+    
+    # Getters
+    def get_id(self)->int:
+        '''Return the number of the state'''
+        return self.__state_id
+    def get_dests(self, letter: str) -> list:
+        '''Return the list of destinations of the state for the given letter'''
+        return self.__dest_states[LETTER_ID[letter]]
+    def is_in(self) -> bool:
+        '''
+        Indicates if the state is an input state
+        Returns:
+            bool
+        '''
+        return self.__in_state
+    def is_out(self) -> bool:
+        '''
+        Indicates if the state is an output state
+        Returns:
+            bool
+        '''
+        return self.__out_state
+    def get_alph_size(self) -> int:
+        '''Getter for the size of the alphabet'''
+        return self.__alph_size
+    
+    # Setters
+    def set_in(self):
+        '''Set the state as an input state'''
+        self.__in_state = True
+    def set_out(self):
+        '''Set the state as an output state'''
+        self.__out_state = True
+    
+    def set_not_in(self):
+        '''Set the state as not an input state'''
+        self.__in_state = False 
+    def set_not_out(self):
+        '''Set the state as not an output state'''
+        self.__out_state = False
+    
+    def add_dest(self, letter : str, num_dest: int):
+        '''Add a destination state from a given character'''
+        # TODO SHOULD VERIFY IF THE LETTER IS IN THE ALPHABET
+        self.__dest_states[LETTER_ID[letter]].append((num_dest))
+    
+    def mod_id(self, new_id: int):
+        ''' Dangerous, modify the id of the state'''
+        print('Modifying the id of state ' + str(self.get_id()) + ' to ' + str(new_id))
+        self.__state_id = new_id
+    
+    def set_label(self, label: str):
+        ''' Method to set a label to the state (will be displaying instead of id when the state is printed)'''
+        self.__label = label
+    
+    # Overwriting
+    def __str__(self)->str:
+        '''Method to display the state with print()'''
+        ch=''
+        # Showing if input or output state
+        if self.is_out():
+            ch+='<'
+            if not(self.is_in()):
+                ch+='-'
+        else:
+            ch += ' '
+        if self.is_in():
+            ch+='->'
+        elif self.is_out():
+            ch += ' '
+        else :
+            ch += '  '
+        ch+='  '
+        # Showing the id or label
+        if self.__label != None:
+            ch += self.__label + '\t'
+        else:
+            ch += str(self.get_id())+'\t'
+        # Showing the transitions
+        for i in range(self.__alph_size):
+            for e in self.get_dests(ALPH[i]):
+                ch += str(e)+','
+            if ch[-1] != '\t': ch = ch[:-1]
+            else: ch += '--'
+            ch += '\t'
+        
+        return ch
