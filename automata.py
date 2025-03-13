@@ -3,8 +3,9 @@ from state import State, ALPH, LETTER_ID
 
 DETER_NOT_COMPLETE = -2
 NOT_DETERM_INPUT = -1
-NOT_DETERM_TRANSITIONS = 0
-DETERMINISTIC, CDFA = 1, 1
+TRANSITION_BEGIN, NOT_DETERM_TRANSITIONS = 0, 0
+TRANSITION_CHAR, DETERMINISTIC, CDFA = 1, 1, 1
+TRANSITION_END = 2
 
 class Automata :
     def __init__(self, alph_size: int, nb_states: int):
@@ -12,6 +13,11 @@ class Automata :
         self.__alph_size = alph_size
         self.__nb_states = nb_states
         self.__states = [State(self.__alph_size,i) for i in range(self.__nb_states)]
+        # These variable will be put to True when necessary, but will be but to False again at any modification
+        # This will avoid to compute multiple time the same thing
+        self.__is_deter = False
+        self.__is_complete = False
+        self.__is_standard = False
     
     # The getters:
     def get_nb_states(self) -> int:
@@ -63,6 +69,7 @@ class Automata :
                 cur_alph_id += 1
             cur_state_id += 1
         
+        self.__is_standard = is_std
         return is_std
     
     def is_deterministic(self) -> int:
@@ -89,6 +96,7 @@ class Automata :
                 cur_alph_id += 1
             cur_state_id += 1
         if is_deter:
+            self.__is_deter = True
             return DETERMINISTIC
         else:
             return NOT_DETERM_TRANSITIONS
@@ -126,6 +134,8 @@ class Automata :
                 cur_alph_id += 1
             cur_state_id += 1
         if is_complete:
+            self.__is_deter = True
+            self.__is_complete = True
             return CDFA
         else:
             return output
@@ -156,15 +166,18 @@ class Automata :
         '''
         if state.get_alph_size() != self.__alph_size:
             print("\033[91mIncompatible alphabet size, couldn\'t add the state\033[0m")
-        if state.get_id() >= self.get_nb_states():
-            state.mod_id(self.__nb_states)
-            self.__nb_states += 1
-            self.__states.append(state)
-            print('Number of state successfuly increased by 1')
-        else :
-            self.__states[state.get_id()]=state
-            print('State successfuly replaced')
-
+        else:
+            if state.get_id() >= self.get_nb_states():
+                state.mod_id(self.__nb_states)
+                self.__nb_states += 1
+                self.__states.append(state)
+                print('Number of state successfuly increased by 1')
+            else :
+                self.__states[state.get_id()]=state
+                print('State successfuly replaced')
+            self.__is_deter = False
+            self.__is_complete = False
+            self.__is_standard = False
     # Methods for Automata
     
     def standardize(self) -> bool:
@@ -205,9 +218,28 @@ class Automata :
                 state_i.add_dest(dest[0], dest[1:])
             # adding to the automata
             self.add_state(state_i)
+            self.__is_deter = False
+            self.__is_complete = False
+            self.__is_standard = True 
             return 1
     
-    #TODO def determinize(self):
+    def determinize_complete(self):# TODO
+        ''' Method to determinize an Automata, the result will be also complete'''
+        #
+        #
+        #
+        self.__is_deter = True
+        self.__is_complete = True
+        self.__is_standard = False
+    
+    def completion(self):# TODO
+        ''' Method to complete a deterministic Automata'''
+        
+        #
+        #
+        self.__is_deter = True
+        self.__is_complete = True
+        self.__is_standard = False
 
     # The overwrited functions and additional init
     def __str__(self):
@@ -226,7 +258,6 @@ class Automata :
         '''
         Function to create the Automata associated to a text file
         '''
-        # TODO PROBLEM: IF A STATE NAME IS COMPOSED OF MULTIPLE DIGITS (should find the letter which is for sure a unique letter, language given and take what's left and right)
         try:
             with open(path, 'r') as file:
                 # reading the nb of symbols and states
@@ -268,7 +299,7 @@ class Automata :
                 from_state_id = int(''.join(digits_before))
                 to_state_id = int(''.join(digits_after))
                 cur_transi = transitions[i]
-                    A.get_state(int(cur_transi[TRANSITION_BEGIN])).add_dest(cur_transi[TRANSITION_CHAR], int(cur_transi[TRANSITION_END]))
+                A.get_state(int(cur_transi[TRANSITION_BEGIN])).add_dest(cur_transi[TRANSITION_CHAR], int(cur_transi[TRANSITION_END]))
                     
                 
                 # ensuring that destinations exist
@@ -304,15 +335,5 @@ class Automata :
             
             file.write(str(len(transistions))+'\n')
             file.write('\n'.join(transistions))
-
-
-
-
-
-
-
-
-
-
 
 
