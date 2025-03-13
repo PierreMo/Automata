@@ -162,3 +162,20 @@ if not istd:
     print(A3)
 
 
+
+
+
+## TESTS FOR COMPLETION ##
+
+paths = ['test.txt', 'automata1.txt', 'automata2.txt']
+
+for path in paths:
+    A1 = Automata.from_file(path)
+    print(path)
+    print(A1)
+    is_comp = A1.is_complete_DFA()
+    print(is_comp)
+    if not is_comp:
+        print('Completing the automata')
+        A1.completion()
+        print(A1)

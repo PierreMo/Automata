@@ -39,7 +39,11 @@ class State :
     def get_alph_size(self) -> int:
         '''Getter for the size of the alphabet'''
         return self.__alph_size
-    
+
+    def get_label(self) -> str:
+        '''Getter for the label of the state'''
+        return self.__label
+
     # Setters
     def set_in(self):
         '''Set the state as an input state'''
@@ -54,7 +58,11 @@ class State :
     def set_not_out(self):
         '''Set the state as not an output state'''
         self.__out_state = False
-    
+
+    def set_label(self, label: str):
+        ''' Method to set a label to the state (will be displaying instead of id when the state is printed)'''
+        self.__label = label
+
     def add_dest(self, letter : str, num_dest: int):
         '''Add a destination state from a given character if it is in the alphabet'''
         if LETTER_ID[letter] < self.get_alph_size():
@@ -67,13 +75,9 @@ class State :
         print('Modifying the id of state ' + str(self.get_id()) + ' to ' + str(new_id))
         self.__state_id = new_id
     
-    def set_label(self, label: str):
-        ''' Method to set a label to the state (will be displaying instead of id when the state is printed)'''
-        self.__label = label
-    
     # Overwriting
-    def __str__(self)->str:
-        '''Method to display the state with print()'''
+    def __str__(self) -> str:
+        '''Method to display the state with print(), by id (not with labels)'''
         ch=''
         # Showing if input or output state
         if self.is_out():
@@ -89,17 +93,17 @@ class State :
         else :
             ch += '  '
         ch+='  '
-        # Showing the id or label
-        if self.__label != None:
-            ch += self.__label + '\t'
-        else:
-            ch += str(self.get_id())+'\t'
+
+        ch += str(self.get_id())+'\t'
+
         # Showing the transitions
-        for i in range(self.__alph_size):
-            for e in self.get_dests(ALPH[i]):
-                ch += str(e)+','
-            if ch[-1] != '\t': ch = ch[:-1]
-            else: ch += '--'
+        for alph_id in range(self.__alph_size):
+            for dest_id in self.get_dests(ALPH[alph_id]):
+                ch += str(dest_id) + ','
+            if ch[-1] == '\t':
+                ch += '--'
+            else:
+                ch = ch[:-1]
             ch += '\t'
         
         return ch
