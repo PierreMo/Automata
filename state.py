@@ -12,8 +12,7 @@ class State :
         self.__out_state = False
         self.__alph_size = alph_size
         self.__state_id = state_id
-        # TODO destinations should better be sets
-        self.__dest_states= [[] for _ in range(self.__alph_size)]
+        self.__dest_states= [set() for _ in range(self.__alph_size)]
         self.__label = None
     
     # Getters
@@ -22,7 +21,7 @@ class State :
         return self.__state_id
     def get_dests(self, letter: str) -> list:
         '''Return the list of destinations of the state for the given letter'''
-        return self.__dest_states[LETTER_ID[letter]]
+        return list(self.__dest_states[LETTER_ID[letter]])
     def is_in(self) -> bool:
         '''
         Indicates if the state is an input state
@@ -57,9 +56,11 @@ class State :
         self.__out_state = False
     
     def add_dest(self, letter : str, num_dest: int):
-        '''Add a destination state from a given character'''
-        # TODO SHOULD VERIFY IF THE LETTER IS IN THE ALPHABET
-        self.__dest_states[LETTER_ID[letter]].append((num_dest))
+        '''Add a destination state from a given character if it is in the alphabet'''
+        if LETTER_ID[letter] < self.get_alph_size():
+            self.__dest_states[LETTER_ID[letter]].add((num_dest))
+        else:
+            assert KeyError('Letter isn\'t in the alphabet of this state')
     
     def mod_id(self, new_id: int):
         ''' Dangerous, modify the id of the state'''
@@ -102,3 +103,7 @@ class State :
             ch += '\t'
         
         return ch
+
+
+
+
