@@ -1,4 +1,5 @@
 import csv
+from collections import deque
 from state import State, ALPH, LETTER_ID
 
 DETER_NOT_COMPLETE = -2
@@ -6,8 +7,10 @@ NOT_DETERM_INPUT = -1
 TRANSITION_BEGIN, NOT_DETERM_TRANSITIONS = 0, 0
 TRANSITION_CHAR, DETERMINISTIC, CDFA = 1, 1, 1
 TRANSITION_END = 2
+MAX_STATE_NB_EXPECTED = 30
 
-class Automata :
+
+class Automata:
     def __init__(self, alph_size: int, nb_states: int):
         # TODO MAKE IT STRONGER
         self.__alph_size = alph_size
@@ -172,6 +175,7 @@ class Automata :
     
     
     # The setters:
+    # Methods for Automata
     def add_state(self, state: State):
         '''
         Method to add a state in an Automata, safely (cohesion of data ensured with alphabet size and id of the nodes)
@@ -192,7 +196,6 @@ class Automata :
             self.__is_complete = False
             self.__is_standard = False
             self.__is_valid = False
-    # Methods for Automata
     
     def standardize(self) -> bool:
         if self.is_standard():
@@ -204,7 +207,7 @@ class Automata :
                 if self.get_state(i).is_in():
                     entries_id.append(i)
                     self.get_state(i).set_not_in()
-            
+
             # looking: if an entry is an output, where the entries points
             is_output = False
             # using a state so that I don't do multiple times the same transition
@@ -218,7 +221,7 @@ class Automata :
                     cur_dests = self.get_state(iD).get_dests(ALPH[cur_alph_id])
                     for dest in cur_dests:
                         destinations.add(ALPH[cur_alph_id] + str(dest))
-            
+
             # creating the new state i
             # init
             state_i = State(self.get_alph_size(), self.get_nb_states())
@@ -236,15 +239,6 @@ class Automata :
             self.__is_complete = False
             self.__is_standard = True
             return True
-    
-    def determinize_complete(self):# TODO
-        ''' Method to determinize an Automata, the result will be also complete'''
-        #
-        #
-        #
-        self.__is_deter = True
-        self.__is_complete = True
-        self.__is_standard = False
     
     def completion(self):
         ''' Method to complete a deterministic Automata'''
@@ -269,7 +263,75 @@ class Automata :
                 # may not be changed but prefer to be safe
                 self.__is_standard = False
 
-    # The overwrited functions and additional init
+
+    
+    def determinize_complete(self) -> 'Automata':
+        '''
+        Method to determinize an Automata, the result will be also complete
+        :return
+            None if failled
+            Automata object if success
+        '''
+        # ( for each new state (begining with the combination of the states) add the combined destination and if destination is a new state, add it)
+        # Identify the input states
+        entries_id = []
+        for i in range(self.get_nb_states()):
+            if self.get_state(i).is_in():
+                entries_id.append(i)
+
+        automat_alph_size = self.get_alph_size()
+        new_automata = Automata(automat_alph_size, 1)
+        # creating a dictionary to store which combination has which id, intiat it with the inputs states
+        cur_label = ','.join([str(state_id) for state_id in entries_id])
+        new_states = {cur_label: 0}
+        # create a queue to know which state you have to treat
+        state_queue = deque()
+        state_queue.append(cur_label)
+
+        # run through all  states and process to adding when needed until the queue is empty
+        working = True
+        count = 0
+        while working and state_queue:
+            if count == MAX_STATE_NB_EXPECTED:
+                print('We arrived at 100 more states, should we continue? Y/N')
+                answer = input()
+                while answer != 'Y' and answer != 'N':
+                    answer = input()
+                if answer == 'Y':
+                    count = 0
+                else:
+                    working = False
+
+            cur_label = state_queue.popleft()
+            cur_state = State(automat_alph_size, new_states[cur_label])
+            current_destinations = [set() for _ in range(automat_alph_size)]
+            print(cur_label)
+            print(cur_label.split(','))
+            print(new_states)
+            cur_state.set_label(cur_label)
+            for state_str in cur_label.split(','):
+                if state_str:
+                    for alph_id in range(automat_alph_size):
+                        for dest_id in self.get_state(int(state_str)).get_dests(ALPH[alph_id]):
+                            current_destinations[alph_id].add(dest_id)
+            for alph_id in range(automat_alph_size):
+                cur_alph_dests = list(current_destinations[alph_id])
+                cur_alph_dests.sort()
+                dest_state_str = ','.join([str(e) for e in cur_alph_dests])
+                if dest_state_str not in new_states:
+                    new_states[dest_state_str] = len(new_states)
+                    state_queue.append(dest_state_str)
+                cur_state.add_dest(ALPH[alph_id], new_states[dest_state_str])
+            new_automata.add_state(cur_state)
+            count += 1
+
+        if not working:
+            return None
+
+        new_automata.completion()
+        # __is_deter, __is_complete and __is_standard have been updated by previous calls to fcts
+        return new_automata
+
     def __str__(self):
         '''
         Method to display the state with print()
@@ -312,9 +374,10 @@ class Automata :
                 ch += '\t'
             ch += '\n'
         return ch
+    # The overwrited functions and additional init
     
     @classmethod
-    def from_file(cls, path: str):
+    def from_file(cls, path: str) -> 'Automata':
         '''
         Function to create the Automata associated to a text file
         '''
@@ -332,7 +395,7 @@ class Automata :
                 out_states_str = file.readline().split()
                 for i in range(1, int(out_states_str[0])+1):
                     A.get_state(int(out_states_str[i])).set_out()
-                
+
                 # adding all the destinations, takin in count the case of multiple digits stat id
                 nb_transitions = int(file.readline())
                 transitions = file.read().split()
@@ -360,13 +423,13 @@ class Automata :
                     to_state_id = int(''.join(digits_after))
                     cur_transi = transitions[i]
                     A.get_state(from_state_id).add_dest(letter, to_state_id)
-                
+
                 # ensuring that destinations exist
                 validity = A.is_valid()
                 if not validity:
                     print("\033[91mBE AWARE YOUR AUTOMATA IS NOT VALID (found a destination that don\'t exists)\033[0m")
                 return A
-            
+
         except FileNotFoundError:
             raise FileNotFoundError("The file does not exist.")
         except IOError:
@@ -394,6 +457,20 @@ class Automata :
             
             file.write(str(len(transistions))+'\n')
             file.write('\n'.join(transistions))
+
+
+
+## TESTS FOR determinize_complete ##
+
+paths = ['test.txt', 'automata1.txt', 'automata2.txt']
+
+for path in paths:
+    A1 = Automata.from_file(path)
+    print(path)
+    print(A1)
+    A2 = A1.determinize_complete()
+    print(A2)
+
 
 
 

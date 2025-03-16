@@ -167,8 +167,6 @@ if not istd:
 
 ## TESTS FOR COMPLETION ##
 
-paths = ['test.txt', 'automata1.txt', 'automata2.txt']
-
 for path in paths:
     A1 = Automata.from_file(path)
     print(path)
@@ -179,3 +177,7 @@ for path in paths:
         print('Completing the automata')
         A1.completion()
         print(A1)
+paths = ['test.txt', 'automata1.txt', 'automata2.txt']
+
+
+
