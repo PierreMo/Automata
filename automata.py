@@ -292,6 +292,7 @@ class Automata:
         working = True
         count = 0
         while working and state_queue:
+            # Propose to close in case of endless loop
             if count == MAX_STATE_NB_EXPECTED:
                 print('We arrived at 100 more states, should we continue? Y/N')
                 answer = input()
@@ -302,80 +303,117 @@ class Automata:
                 else:
                     working = False
 
+            # Initialization of the state and it's destinations
             cur_label = state_queue.popleft()
             cur_state = State(automat_alph_size, new_states[cur_label])
             current_destinations = [set() for _ in range(automat_alph_size)]
-            print(cur_label)
-            print(cur_label.split(','))
-            print(new_states)
             cur_state.set_label(cur_label)
+            # Running through the states composing the current state
             for state_str in cur_label.split(','):
                 if state_str:
+                    if self.get_state(int(state_str)).is_out():
+                        cur_state.set_out()
                     for alph_id in range(automat_alph_size):
                         for dest_id in self.get_state(int(state_str)).get_dests(ALPH[alph_id]):
                             current_destinations[alph_id].add(dest_id)
+            # Running through the destinations of the current state
             for alph_id in range(automat_alph_size):
                 cur_alph_dests = list(current_destinations[alph_id])
-                cur_alph_dests.sort()
-                dest_state_str = ','.join([str(e) for e in cur_alph_dests])
-                if dest_state_str not in new_states:
-                    new_states[dest_state_str] = len(new_states)
-                    state_queue.append(dest_state_str)
-                cur_state.add_dest(ALPH[alph_id], new_states[dest_state_str])
+                if cur_alph_dests:
+                    cur_alph_dests.sort()
+                    dest_state_str = ','.join([str(e) for e in cur_alph_dests])
+                    if dest_state_str not in new_states:
+                        new_states[dest_state_str] = len(new_states)
+                        state_queue.append(dest_state_str)
+                    cur_state.add_dest(ALPH[alph_id], new_states[dest_state_str])
             new_automata.add_state(cur_state)
             count += 1
 
+        new_automata.get_state(0).set_in()
+
         if not working:
             return None
-
+        print("Before completion")
+        new_automata.printA()
         new_automata.completion()
         # __is_deter, __is_complete and __is_standard have been updated by previous calls to fcts
         return new_automata
 
-    def __str__(self):
+    def printCDFA(self):
+        '''Method to print Automata with label (for Determinitics ones for exemple)'''
+        # Example array with strings of different sizes, including empty strings
+        ch = 'Displaying Automata \n'
+        array = self.str_label_list()
+
+        # Determine the maximum width for each column, ignoring empty strings
+        col_widths = [max(len(item) for item in col if item) for col in zip(*array)]
+
+        # Display the array with aligned columns, ignoring empty strings
+        for row in array:
+            formatted_row = " | ".join(
+                f"{item:<{width}}" if item else " " * width for item, width in zip(row, col_widths))
+            print(formatted_row)
+
+    def str_label_list(self) -> list:
         '''
         Method to display the state with print()
         '''
-        ch = 'Displaying Automata \n'
-        ch += '     \t' + '\t'.join(ALPH[:self.__alph_size])+'\n'
-        # Here we could have directly print the states, but we want to show the labels in the transitions
-        for state_id in range(self.get_nb_states()):
-            # Showing if input or output state
-            if self.get_state(state_id).is_out():
-                ch += '<'
-                if not (self.get_state(state_id).is_in()):
-                    ch += '-'
-            else:
-                ch += ' '
-            if self.get_state(state_id).is_in():
-                ch += '->'
-            elif self.get_state(state_id).is_out():
-                ch += ' '
-            else:
-                ch += '  '
-            ch += '  '
-            if self.get_state(state_id).get_label() is None:
-                ch += str(self.get_state(state_id).get_id()) + '\t'
-            else:
-                ch += str(self.get_state(state_id).get_label()) + '\t'
 
-            # Showing the transitions
-            for alph_id in range(self.get_alph_size()):
+        row = self.get_nb_states() + 1
+        col = self.get_alph_size() + 2
+
+        items = [['' for _ in range(col)] for __ in range(row)]
+        for i in range(2,col):
+            items[0][i] = ALPH[i-2]
+        for row_nbr in range(1,row):
+            # if it is an input or output state
+            state_id = row_nbr - 1
+            arrow = ""
+            if self.get_state(state_id).is_out():
+                arrow += '<'
+                if not (self.get_state(state_id).is_in()):
+                    arrow += '-'
+            if self.get_state(state_id).is_in():
+                arrow += '->'
+            items[row_nbr][0] = arrow
+            # It's id or label
+            if self.get_state(state_id).get_label() is None:
+                name = str(self.get_state(state_id).get_id())
+            else:
+                name = "(" + str(self.get_state(state_id).get_label()) + ")"
+            items[row_nbr][1] = name
+            # All the transitions
+            for col_nbr in range(2,col):
+                alph_id = col_nbr - 2
+                transitions_str = ""
                 for dest_id in self.get_state(state_id).get_dests(ALPH[alph_id]):
                     if self.get_state(dest_id).get_label() is None:
-                        ch += str(dest_id)
+                        transitions_str += str(dest_id)
                     else:
-                        ch += self.get_state(dest_id).get_label()
-                    ch += ','
-                if ch[-1] == '\t':
-                    ch += '--'
+                        transitions_str += "(" + self.get_state(dest_id).get_label() + ")"
+                    transitions_str += '/'
+                if not transitions_str:
+                    transitions_str += '--'
                 else:
-                    ch = ch[:-1]
-                ch += '\t'
-            ch += '\n'
+                    transitions_str = transitions_str[:-1]
+                items[row_nbr][col_nbr] = transitions_str + ''
+        return items
+
+
+
+    def __str__(self) -> str:
+        '''
+                Method to display the state with print()
+                '''
+        ch = 'Displaying Automata \n'
+        ch += '     \t' + '\t'.join(ALPH[:self.__alph_size]) + '\n'
+        # Here we could have directly print the states, but we want to show the labels in the transitions
+        for state_id in range(self.get_nb_states()):
+            ch += str(self.get_state(state_id)) + '\n'
         return ch
+
+
     # The overwrited functions and additional init
-    
     @classmethod
     def from_file(cls, path: str) -> 'Automata':
         '''
@@ -464,13 +502,13 @@ class Automata:
 
 paths = ['test.txt', 'automata1.txt', 'automata2.txt']
 
-for path in paths:
-    A1 = Automata.from_file(path)
-    print(path)
-    print(A1)
-    A2 = A1.determinize_complete()
-    print(A2)
 
+A1 = Automata.from_file(paths[0])
+print(A1)
+A2 = A1.determinize_complete()
+print("After determinize_complete")
+print(A2.str_label_list())
+A2.printCDFA()
 
 
 

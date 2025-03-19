@@ -180,4 +180,13 @@ for path in paths:
 paths = ['test.txt', 'automata1.txt', 'automata2.txt']
 
 
+## TESTS FOR determinize_complete ##
 
+paths = ['test.txt', 'automata1.txt', 'automata2.txt']
+
+for path in paths:
+    A1 = Automata.from_file(path)
+    print(path)
+    print(A1)
+    A2 = A1.determinize_complete()
+    print(A2)
