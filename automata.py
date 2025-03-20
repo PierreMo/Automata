@@ -172,7 +172,7 @@ class Automata:
                 id_state += 1
             self.__is_valid = validity
             return validity
-    
+
     
     # The setters:
     # Methods for Automata
@@ -196,7 +196,7 @@ class Automata:
             self.__is_complete = False
             self.__is_standard = False
             self.__is_valid = False
-    
+
     def standardize(self) -> bool:
         if self.is_standard():
             return False
@@ -239,7 +239,49 @@ class Automata:
             self.__is_complete = False
             self.__is_standard = True
             return True
-    
+
+    def recognize_word(self, word : str) -> bool:
+        '''
+        Method to check if a word is recognized by the Automata
+        :return: bool -- True if recognized
+        '''
+        valid = 1
+        ch_id = 0
+        while valid and ch_id < len(word):
+            if word[ch_id] not in ALPH[:self.get_alph_size()]:
+                valid = 0
+            ch_id += 1
+        if not valid:
+            print("Can't recognize, invalid character")
+            return False
+        else:
+            # Ensuring that it is deterministic to treat the problem easily
+            if self.is_complete_DFA() == CDFA:
+                print("il est deter")
+                return self.recursive_word_recognition(word, 0)
+            else:
+                print("il est pas")
+                A = self.determinize_complete()
+                A.printCDFA()
+                return A.recursive_word_recognition(word, 0)
+
+
+    def recursive_word_recognition(self, word: str, state_id: int) -> bool:
+        '''
+        Recursive call method to find if a correct word is recognized
+        :param word: correct word to be recognized (correct means characters in alphabet)
+        :param state_id: id of the state at which we arrived
+        :return:
+        '''
+        print("word: "+word)
+        print("state_id: "+str(state_id))
+        if not word:
+            if self.get_state(state_id).is_out():
+                return True
+            else:
+                return False
+        return self.recursive_word_recognition(word[1:], self.get_state(state_id).get_dests(word[0])[0])
+
     def completion(self):
         ''' Method to complete a deterministic Automata'''
         if not self.is_complete_DFA():
@@ -263,8 +305,6 @@ class Automata:
                 # may not be changed but prefer to be safe
                 self.__is_standard = False
 
-
-    
     def determinize_complete(self) -> 'Automata':
         '''
         Method to determinize an Automata, the result will be also complete
@@ -576,21 +616,15 @@ class Automata:
 
 
 
-## TESTS FOR determinize_complete ##
+## TESTS FOR recognize_word ##
 
 paths = ['test.txt', 'automata1.txt', 'automata2.txt']
 
-
-A1 = Automata.from_file(paths[0])
-print(A1)
-A2 = A1.determinize_complete()
-print("After determinize_complete")
-A2.printCDFA()
-
-A3 = A2.minimization()
-print("After Minimization")
-print(A3)
-A3.printCDFA()
+for path in paths:
+    A1 = Automata.from_file(path)
+    print(path)
+    print(A1)
+    print(A1.recognize_word("abaa"))
 
 
 
