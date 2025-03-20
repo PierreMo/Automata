@@ -111,7 +111,7 @@ class Automata:
             else:
                 return NOT_DETERM_TRANSITIONS
     
-    def is_complete_DFA(self) -> int:
+    def is_complete_DFA(self, silent_mode: bool = False) -> int:
         '''
         Method which says wether a FA is a complete deterministic automata
         Return :
@@ -125,7 +125,7 @@ class Automata:
         else:
             #
             if self.get_nb_in_states() != 1:
-                print('Algorithm isn\'t CDFA: it is not a deterministic one.')
+                if not silent_mode: print('Algorithm isn\'t CDFA: it is not a deterministic one.')
                 return NOT_DETERM_INPUT
             #
             is_complete = True
@@ -135,11 +135,11 @@ class Automata:
                 while is_complete and cur_alph_id < self.get_alph_size():
                     if len(self.get_state(cur_state_id).get_dests(ALPH[cur_alph_id])) != 1:
                         if len(self.get_state(cur_state_id).get_dests(ALPH[cur_alph_id])) == 0:
-                            print('Algorithm isn\'t CDFA: it is not complete for sure and may not be deterministic due to numerous destinations.'
+                            if not silent_mode: print('Algorithm isn\'t CDFA: it is not complete for sure and may not be deterministic due to numerous destinations.'
                                   +'\n\t'+'Not complete for state, transition: '+str(cur_state_id)+', '+ALPH[cur_alph_id])
                             output = NOT_DETERM_TRANSITIONS
                         else:
-                            print('Algorithm isn\'t CDFA: it is not deterministic for sure and may not be complete.' +
+                            if not silent_mode: print('Algorithm isn\'t CDFA: it is not deterministic for sure and may not be complete.' +
                                   '\n\tNot deterministic for state, transition, number of destinations: '
                                   + str(cur_state_id) + ', ' + ALPH[cur_alph_id] + ', '+  str(len(self.get_state(cur_state_id).get_dests(ALPH[cur_alph_id]))))
                             output = DETER_NOT_COMPLETE
@@ -176,7 +176,8 @@ class Automata:
     
     # The setters:
     # Methods for Automata
-    def add_state(self, state: State):
+
+    def add_state(self, state: State, silent_mode: bool = False):
         '''
         Method to add a state in an Automata, safely (cohesion of data ensured with alphabet size and id of the nodes)
         (will replace the node the exist with the same id)
@@ -185,13 +186,13 @@ class Automata:
             print("\033[91mIncompatible alphabet size, couldn\'t add the state\033[0m")
         else:
             if state.get_id() >= self.get_nb_states():
-                state.mod_id(self.__nb_states)
+                state.mod_id(self.__nb_states, True)
                 self.__nb_states += 1
                 self.__states.append(state)
-                print('Number of state successfuly increased by 1')
+                if not silent_mode: print('Number of state successfuly increased by 1')
             else :
                 self.__states[state.get_id()]=state
-                print('State successfuly replaced')
+                if not silent_mode: print('State successfuly replaced')
             self.__is_deter = False
             self.__is_complete = False
             self.__is_standard = False
@@ -256,7 +257,7 @@ class Automata:
             return False
         else:
             # Ensuring that it is deterministic to treat the problem easily
-            if self.is_complete_DFA() == CDFA:
+            if self.is_complete_DFA(True) == CDFA:
                 print("il est deter")
                 return self.recursive_word_recognition(word, 0)
             else:
@@ -284,7 +285,7 @@ class Automata:
 
     def completion(self):
         ''' Method to complete a deterministic Automata'''
-        if not self.is_complete_DFA():
+        if not self.is_complete_DFA(True):
             if not self.is_deterministic():
                 print("The Automata should be deterministic first")
             else:
@@ -295,7 +296,7 @@ class Automata:
                 for alph_id in range(self.get_alph_size()):
                     g.add_dest(ALPH[alph_id], self.get_nb_states())
                 g_id = self.get_nb_states()
-                self.add_state(g)
+                self.add_state(g, True)
                 # Find all the transitions that are empty and put G as destination
                 for dest_id in range(self.get_nb_states()):
                     for alph_id in range(self.get_alph_size()):
@@ -366,7 +367,7 @@ class Automata:
                         new_states[dest_state_str] = len(new_states)
                         state_queue.append(dest_state_str)
                     cur_state.add_dest(ALPH[alph_id], new_states[dest_state_str])
-            new_automata.add_state(cur_state)
+            new_automata.add_state(cur_state, True)
             count += 1
 
         new_automata.get_state(0).set_in()
@@ -457,7 +458,7 @@ class Automata:
         Method to build a minimized Automata
         return: Automata minimized
         '''
-        if self.is_complete_DFA() == CDFA:
+        if self.is_complete_DFA(True) == CDFA:
             # Splitting in two groups, terminal states and non-terminal states
             groups = [[],[]]
             for state_id in range(self.get_nb_states()):
@@ -510,7 +511,7 @@ class Automata:
         Method that returns the complementary automata
         :return:
         '''
-        if self.is_complete_DFA() == CDFA:
+        if self.is_complete_DFA(True) == CDFA:
             new_automata = self.copy()
         else:
             new_automata = self.determinize_complete()

@@ -70,9 +70,9 @@ class State :
         else:
             assert KeyError('Letter isn\'t in the alphabet of this state')
     
-    def mod_id(self, new_id: int):
+    def mod_id(self, new_id: int, silent_mode: bool = False):
         ''' Dangerous, modify the id of the state'''
-        print('Modifying the id of state ' + str(self.get_id()) + ' to ' + str(new_id))
+        if not silent_mode:print('Modifying the id of state ' + str(self.get_id()) + ' to ' + str(new_id))
         self.__state_id = new_id
     
     # Overwriting
