@@ -89,7 +89,6 @@ class State :
         new_state.__dest_states = [self.__dest_states[alph_id].copy() for alph_id in range(self.__alph_size)]
         new_state.__label = self.get_label()
 
-
     def __str__(self) -> str:
         '''Method to display the state with print(), by id (not with labels)'''
         ch=''

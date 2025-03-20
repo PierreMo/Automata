@@ -465,6 +465,20 @@ class Automata:
         else:
             print("Can't minimize, your Automata should first be a complete and deterministic one")
 
+
+    def copy(self) -> 'Automata': # TODO
+        '''
+        Method to copy an Automata instance
+        returns: Automata instance, a copy of this one
+        '''
+        new_automata = Automata(self.get_alph_size(), self.get_nb_states())
+        new_automata.__states = [self.__states[state_id].copy() for state_id in range(self.__nb_states)]
+        new_automata.__is_deter = self.__is_deter
+        new_automata.__is_complete = self.__is_complete
+        new_automata.__is_standard = self.__is_standard
+        new_automata.__is_valid = self.__is_valid
+        return new_automata
+
     def __str__(self) -> str:
         '''
                 Method to display the state with print()
