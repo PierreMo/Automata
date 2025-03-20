@@ -76,6 +76,20 @@ class State :
         self.__state_id = new_id
     
     # Overwriting
+    def copy(self) -> 'State':
+        '''
+        Method to copy a state
+        :return: same state with a different address
+        '''
+        new_state = State()
+        new_state.__in_state = self.__in_state
+        new_state.__out_state = self.__out_state
+        new_state.__alph_size = self.alph_size
+        new_state.__state_id = self.__state_id
+        new_state.__dest_states = [self.__dest_states[alph_id].copy() for alph_id in range(self.__alph_size)]
+        new_state.__label = self.get_label()
+
+
     def __str__(self) -> str:
         '''Method to display the state with print(), by id (not with labels)'''
         ch=''

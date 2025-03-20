@@ -575,6 +575,7 @@ A2.printCDFA()
 
 A3 = A2.minimization()
 print("After Minimization")
+print(A3)
 A3.printCDFA()
 
 
