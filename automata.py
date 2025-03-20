@@ -505,7 +505,27 @@ class Automata:
         else:
             print("Can't minimize, your Automata should first be a complete and deterministic one")
 
-
+    def complementary_automata(self) -> 'Automata':
+        '''
+        Method that returns the complementary automata
+        :return:
+        '''
+        if self.is_complete_DFA() == CDFA:
+            new_automata = self.copy()
+        else:
+            new_automata = self.determinize_complete()
+            print("We will base us on the CDFA automata corresponding to your automata:")
+            new_automata.printCDFA()
+        # List such that [[NT],[T]]
+        state_id_is_terminal = [[],[]]
+        for state_id in range(new_automata.get_nb_states()):
+            state_id_is_terminal[new_automata.get_state(state_id).is_out()].append(state_id)
+        # Switching the NT and T states state of output
+        for state_id in state_id_is_terminal[0]:
+            new_automata.get_state(state_id).set_out()
+        for state_id in state_id_is_terminal[1]:
+            new_automata.get_state(state_id).set_not_out()
+        return new_automata
     def copy(self) -> 'Automata': # TODO
         '''
         Method to copy an Automata instance
@@ -616,7 +636,7 @@ class Automata:
 
 
 
-## TESTS FOR recognize_word ##
+## TESTS FOR complementary_automata ##
 
 paths = ['test.txt', 'automata1.txt', 'automata2.txt']
 
@@ -624,7 +644,8 @@ for path in paths:
     A1 = Automata.from_file(path)
     print(path)
     print(A1)
-    print(A1.recognize_word("abaa"))
+    A2 = A1.complementary_automata()
+    print(A2)
 
-
+# TODO silent mode to not pollute the console
 
