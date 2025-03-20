@@ -564,18 +564,18 @@ class Automata:
 
 ## TESTS FOR determinize_complete ##
 
-paths = ['test.txt', 'automata1.txt', 'automata2.txt']
+# paths = ['test.txt', 'automata1.txt', 'automata2.txt']
 
 
-A1 = Automata.from_file(paths[0])
-print(A1)
-A2 = A1.determinize_complete()
-print("After determinize_complete")
-A2.printCDFA()
+# A1 = Automata.from_file(paths[0])
+# print(A1)
+# A2 = A1.determinize_complete()
+# print("After determinize_complete")
+# A2.printCDFA()
 
-A3 = A2.minimization()
-print("After Minimization")
-A3.printCDFA()
+# A3 = A2.minimization()
+# print("After Minimization")
+# A3.printCDFA()
 
 
 
