@@ -453,6 +453,7 @@ class Automata:
             splited_group[cur_group_dest].append(state_id)
         # sorting to be sure to obtain the same order (avoiding problem in minim. w/ old==groups)
         return [splited_group[key] for key in sorted(splited_group.keys())]
+
     def minimization(self) -> 'Automata':
         '''
         Method to build a minimized Automata
@@ -479,28 +480,34 @@ class Automata:
                 association = {state_id: grp_id for grp_id in range(len(groups)) for state_id in groups[grp_id]}
             if len(groups) == self.get_nb_states():
                 print("The Automata was already minimized.")
+
             # Construct an Automata with the groups obtained
-            new_automata = Automata(self.get_alph_size(), self.get_nb_states())
+            new_automata = Automata(self.get_alph_size(), len(groups))
+            # identify the entry state
             state_id = 0
             entry_state_id = -1
             while entry_state_id == -1 and state_id < self.get_nb_states():
-                entry_state_id = state_id
+                if self.get_state(state_id).is_in():
+                    entry_state_id = state_id
                 state_id += 1
+            # Create the states corresponding to the groups
             for group_id in range(len(groups)):
                 group = groups[group_id]
                 new_state = State(self.get_alph_size(), group_id)
+                # if a state is an entry
                 if entry_state_id in group:
                     new_state.set_in()
-                # thanks to theta 0
-                if self.get_state(group[0]).is_out():
+                a_state_id = group[0]
+                # thanks to theta 0, if one is output the group is
+                if self.get_state(a_state_id).is_out():
                     new_state.set_out()
+                # putting the correct destination since it is deterministic
                 for alph_id in range(self.get_alph_size()):
-                    # putting the correct destination since it is deterministic
-                    new_state.add_dest(ALPH[alph_id], self.get_state(group[0]).get_dests(ALPH[alph_id])[0])
+                    new_state.add_dest(ALPH[alph_id], association[self.get_state(a_state_id).get_dests(ALPH[alph_id])[0]])
                 # adding a label to the group
                 cur_group_dest = ', '.join([self.get_state(state_id).get_label() if self.get_state(state_id).get_label() is not None else state_id for state_id in group])
                 new_state.set_label(cur_group_dest)
-                #adding the group state to the new Automata
+                # adding the group state to the new Automata
                 new_automata.add_state(new_state)
             return new_automata
         else:
@@ -527,7 +534,7 @@ class Automata:
         for state_id in state_id_is_terminal[1]:
             new_automata.get_state(state_id).set_not_out()
         return new_automata
-    def copy(self) -> 'Automata': # TODO
+    def copy(self) -> 'Automata':
         '''
         Method to copy an Automata instance
         returns: Automata instance, a copy of this one
@@ -637,16 +644,22 @@ class Automata:
 
 
 
-## TESTS FOR complementary_automata ##
+## TESTS FOR Minimization ##
 
 paths = ['test.txt', 'automata1.txt', 'automata2.txt']
 
-for path in paths:
-    A1 = Automata.from_file(path)
-    print(path)
-    print(A1)
-    A2 = A1.complementary_automata()
-    print(A2)
+A1 = Automata.from_file(paths[0])
+print(A1)
+A2 = A1.determinize_complete()
+print("After determinize_complete")
+A2.printCDFA()
 
-# TODO silent mode to not pollute the console
+print(A2)
+A3 = A2.minimization()
+print("After Minimization")
+print(A3)
+A3.printCDFA()
+
+
+
 

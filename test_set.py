@@ -202,3 +202,17 @@ for path in paths:
     print(path)
     print(A1)
     print(A1.recognize_word("abaa"))
+
+
+
+
+## TESTS FOR complementary_automata ##
+
+paths = ['test.txt', 'automata1.txt', 'automata2.txt']
+
+for path in paths:
+    A1 = Automata.from_file(path)
+    print(path)
+    print(A1)
+    A2 = A1.complementary_automata()
+    print(A2)
