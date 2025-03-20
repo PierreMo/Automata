@@ -485,8 +485,15 @@ class Automata:
                 # Update the association dictionary
                 association.clear()
                 association = {state_id: grp_id for grp_id in range(len(groups)) for state_id in groups[grp_id]}
+
             if len(groups) == self.get_nb_states():
                 print("The Automata was already minimized.")
+                return self.copy()
+
+            # Sorting the groups to have coherence with the original Automata
+            groups.sort(key=lambda x: x[0])
+            association.clear()
+            association = {state_id: grp_id for grp_id in range(len(groups)) for state_id in groups[grp_id]}
 
             # Construct an Automata with the groups obtained
             new_automata = Automata(self.get_alph_size(), len(groups))
