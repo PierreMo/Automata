@@ -388,10 +388,17 @@ class Automata:
         # Determine the maximum width for each column, ignoring empty strings
         col_widths = [max(len(item) for item in col if item) for col in zip(*array)]
 
+        border = '+-' + '-+-'.join('-' * width for width in col_widths) + '-+'
+
         # Display the array with aligned columns, ignoring empty strings
-        for row in array:
+        print(border)
+        formatted_row = " | ".join(f"{item:<{width}}" if item else " " * width for item, width in zip(array[0], col_widths))
+        print(f"| {formatted_row} |")
+        print(border)
+        for row in array[1:]:
             formatted_row = " | ".join(f"{item:<{width}}" if item else " " * width for item, width in zip(row, col_widths))
-            print(formatted_row)
+            print(f"| {formatted_row} |")
+        print(border)
 
     def _str_label_list(self) -> list:
         '''
