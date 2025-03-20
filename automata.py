@@ -381,16 +381,17 @@ class Automata:
 
     def printCDFA(self):
         '''Method to print Automata with label (for Determinitics ones for exemple)'''
-        # Example array with strings of different sizes, including empty strings
         ch = 'Displaying Automata \n'
+        # Putting all the information to display in a matrix
         array = self._str_label_list()
 
-        # Determine the maximum width for each column, ignoring empty strings
+        # Finding the max size of a column
         col_widths = [max(len(item) for item in col if item) for col in zip(*array)]
 
+        # Creating a beautiful line
         border = '+-' + '-+-'.join('-' * width for width in col_widths) + '-+'
 
-        # Display the array with aligned columns, ignoring empty strings
+        # Display the information with a border all around and inside
         print(border)
         formatted_row = " | ".join(f"{item:<{width}}" if item else " " * width for item, width in zip(array[0], col_widths))
         print(f"| {formatted_row} |")
@@ -400,7 +401,7 @@ class Automata:
             print(f"| {formatted_row} |")
         print(border)
 
-    def _str_label_list(self) -> list:
+    def _str_label_list(self, minim:bool=False) -> list:
         '''
         Method to display the state with print()
         '''
@@ -423,20 +424,31 @@ class Automata:
                 arrow += '->'
             items[row_nbr][0] = arrow
             # It's id or label
-            if self.get_state(state_id).get_label() is None:
-                name = str(self.get_state(state_id).get_id())
+            cur_label = self.get_state(state_id).get_label()
+            if cur_label is None or ("," in cur_label and minim):
+                if cur_label is not None and state_id > 0 and state_id < 10:
+                    roman_numerals = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII", 8: "VIII", 9: "IX"}
+                    name = roman_numerals[state_id]
+                else:
+                    name = str(self.get_state(state_id).get_id())
             else:
-                name = "(" + str(self.get_state(state_id).get_label()) + ")"
+                name = "(" + str(cur_label) + ")"
             items[row_nbr][1] = name
             # All the transitions
             for col_nbr in range(2,col):
                 alph_id = col_nbr - 2
                 transitions_str = ""
                 for dest_id in self.get_state(state_id).get_dests(ALPH[alph_id]):
-                    if self.get_state(dest_id).get_label() is None:
-                        transitions_str += str(dest_id)
+                    # Don't show the label if isn't or if is a group due to minimization (,)
+                    dest_label = self.get_state(dest_id).get_label()
+                    if dest_label is None or ("," in dest_label and minim):
+                        if dest_label is not None and dest_id > 0 and dest_id < 10:
+                            roman_numerals = {1: "I",2: "II",3: "III",4: "IV",5: "V",6: "VI",7: "VII",8: "VIII",9: "IX"}
+                            transitions_str += roman_numerals[dest_id]
+                        else:
+                            transitions_str += str(dest_id)
                     else:
-                        transitions_str += "(" + self.get_state(dest_id).get_label() + ")"
+                        transitions_str += "(" + dest_label + ")"
                     transitions_str += '/'
                 if not transitions_str:
                     transitions_str += '--'
@@ -445,6 +457,42 @@ class Automata:
                 items[row_nbr][col_nbr] = transitions_str + ''
         return items
 
+    def print_minimized(self):
+        '''Method to display a minimized Automata'''
+        # mainly the same as printCDFA but showing the group at the end
+        ch = 'Displaying Automata \n'
+        # Putting all the information to display in a matrix
+        array = self._str_label_list(True)
+
+        # Finding the max size of a column
+        col_widths = [max(len(item) for item in col if item) for col in zip(*array)]
+
+        # Creating a beautiful line
+        border = '+-' + '-+-'.join('-' * width for width in col_widths) + '-+'
+
+        # Display the information with a border all around and inside
+        print(border)
+        formatted_row = " | ".join(
+            f"{item:<{width}}" if item else " " * width for item, width in zip(array[0], col_widths))
+        print(f"| {formatted_row} |")
+        print(border)
+        for row in array[1:]:
+            formatted_row = " | ".join(
+                f"{item:<{width}}" if item else " " * width for item, width in zip(row, col_widths))
+            print(f"| {formatted_row} |")
+        print(border)
+        # Displaying the eventual groups made by the minimization
+        group = False
+        for state_id in range(self.get_nb_states()):
+            if self.get_state(state_id).get_label() is not None and ',' in self.get_state(state_id).get_label():
+                if not group:
+                    print("| With the groups:")
+                    group = True
+                if state_id > 0 and state_id < 10:
+                    roman_numerals = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII", 8: "VIII", 9: "IX"}
+                    print("| "+roman_numerals[state_id]+" corresponding to "+ self.get_state(state_id).get_label())
+                else:
+                    print("| "+str(state_id)+" corresponding to "+ self.get_state(state_id).get_label())
 
     def __split(self, group : list, association : dict) -> list:
         '''
@@ -662,18 +710,14 @@ class Automata:
 
 paths = ['test.txt', 'automata1.txt', 'automata2.txt']
 
-A1 = Automata.from_file(paths[0])
+A1 = Automata.from_file(paths[2])
 print(A1)
 A2 = A1.determinize_complete()
 print("After determinize_complete")
 A2.printCDFA()
-
-print(A2)
 A3 = A2.minimization()
 print("After Minimization")
-print(A3)
-A3.printCDFA()
-
+A3.print_minimized()
 
 
 
