@@ -282,7 +282,7 @@ class Automata:
         automat_alph_size = self.get_alph_size()
         new_automata = Automata(automat_alph_size, 1)
         # creating a dictionary to store which combination has which id, intiat it with the inputs states
-        cur_label = ','.join([str(state_id) for state_id in entries_id])
+        cur_label = '.'.join([str(state_id) for state_id in entries_id])
         new_states = {cur_label: 0}
         # create a queue to know which state you have to treat
         state_queue = deque()
@@ -309,7 +309,7 @@ class Automata:
             current_destinations = [set() for _ in range(automat_alph_size)]
             cur_state.set_label(cur_label)
             # Running through the states composing the current state
-            for state_str in cur_label.split(','):
+            for state_str in cur_label.split('.'):
                 if state_str:
                     if self.get_state(int(state_str)).is_out():
                         cur_state.set_out()
@@ -321,7 +321,7 @@ class Automata:
                 cur_alph_dests = list(current_destinations[alph_id])
                 if cur_alph_dests:
                     cur_alph_dests.sort()
-                    dest_state_str = ','.join([str(e) for e in cur_alph_dests])
+                    dest_state_str = '.'.join([str(e) for e in cur_alph_dests])
                     if dest_state_str not in new_states:
                         new_states[dest_state_str] = len(new_states)
                         state_queue.append(dest_state_str)
@@ -333,8 +333,7 @@ class Automata:
 
         if not working:
             return None
-        print("Before completion")
-        new_automata.printA()
+
         new_automata.completion()
         # __is_deter, __is_complete and __is_standard have been updated by previous calls to fcts
         return new_automata
@@ -343,18 +342,17 @@ class Automata:
         '''Method to print Automata with label (for Determinitics ones for exemple)'''
         # Example array with strings of different sizes, including empty strings
         ch = 'Displaying Automata \n'
-        array = self.str_label_list()
+        array = self._str_label_list()
 
         # Determine the maximum width for each column, ignoring empty strings
         col_widths = [max(len(item) for item in col if item) for col in zip(*array)]
 
         # Display the array with aligned columns, ignoring empty strings
         for row in array:
-            formatted_row = " | ".join(
-                f"{item:<{width}}" if item else " " * width for item, width in zip(row, col_widths))
+            formatted_row = " | ".join(f"{item:<{width}}" if item else " " * width for item, width in zip(row, col_widths))
             print(formatted_row)
 
-    def str_label_list(self) -> list:
+    def _str_label_list(self) -> list:
         '''
         Method to display the state with print()
         '''
@@ -400,6 +398,72 @@ class Automata:
         return items
 
 
+    def __split(self, group : list, association : dict) -> list:
+        '''
+        Method that split the group depending on the group of dest of each state given by association (minimization)
+        :return list of list
+        '''
+        splited_group = {}
+        for state_id in group:
+            # join the group of destination of the state for each letter of the alphabet, [0] bc deterministic
+            cur_group_dest = ','.join([str(association[self.get_state(state_id).get_dests(ALPH[alph_id])[0]]) for alph_id in range(self.get_alph_size())])
+            if cur_group_dest not in splited_group:
+                splited_group[cur_group_dest] = []
+            splited_group[cur_group_dest].append(state_id)
+        # sorting to be sure to obtain the same order (avoiding problem in minim. w/ old==groups)
+        return [splited_group[key] for key in sorted(splited_group.keys())]
+    def minimization(self) -> 'Automata':
+        '''
+        Method to build a minimized Automata
+        return: Automata minimized
+        '''
+        if self.is_complete_DFA() == CDFA:
+            # Splitting in two groups, terminal states and non-terminal states
+            groups = [[],[]]
+            for state_id in range(self.get_nb_states()):
+                groups[self.get_state(state_id).is_out()].append(state_id)
+            # Associating each state to its group
+            association = {state_id: grp_id for grp_id in range(2) for state_id in groups[grp_id]}
+
+            # Running through the groups and splitting them until it is stable
+            old_groups = []
+            while old_groups != groups:
+                old_groups = groups
+                groups = []
+                for group in old_groups:
+                    for new_group in self.__split(group, association):
+                        groups.append(new_group)
+                # Update the association dictionary
+                association.clear()
+                association = {state_id: grp_id for grp_id in range(len(groups)) for state_id in groups[grp_id]}
+            if len(groups) == self.get_nb_states():
+                print("The Automata was already minimized.")
+            # Construct an Automata with the groups obtained
+            new_automata = Automata(self.get_alph_size(), self.get_nb_states())
+            state_id = 0
+            entry_state_id = -1
+            while entry_state_id == -1 and state_id < self.get_nb_states():
+                entry_state_id = state_id
+                state_id += 1
+            for group_id in range(len(groups)):
+                group = groups[group_id]
+                new_state = State(self.get_alph_size(), group_id)
+                if entry_state_id in group:
+                    new_state.set_in()
+                # thanks to theta 0
+                if self.get_state(group[0]).is_out():
+                    new_state.set_out()
+                for alph_id in range(self.get_alph_size()):
+                    # putting the correct destination since it is deterministic
+                    new_state.add_dest(ALPH[alph_id], self.get_state(group[0]).get_dests(ALPH[alph_id])[0])
+                # adding a label to the group
+                cur_group_dest = ', '.join([self.get_state(state_id).get_label() if self.get_state(state_id).get_label() is not None else state_id for state_id in group])
+                new_state.set_label(cur_group_dest)
+                #adding the group state to the new Automata
+                new_automata.add_state(new_state)
+            return new_automata
+        else:
+            print("Can't minimize, your Automata should first be a complete and deterministic one")
 
     def __str__(self) -> str:
         '''
@@ -507,8 +571,11 @@ A1 = Automata.from_file(paths[0])
 print(A1)
 A2 = A1.determinize_complete()
 print("After determinize_complete")
-print(A2.str_label_list())
 A2.printCDFA()
+
+A3 = A2.minimization()
+print("After Minimization")
+A3.printCDFA()
 
 
 
