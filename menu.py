@@ -39,7 +39,7 @@ class AutomataApp(ctk.CTk):
         self.file_label.pack(side="left", padx=10, pady=5)
 
         self.file_dropdown = ctk.CTkComboBox(
-            self.top_frame, values=self.get_txt_files(), command=self.on_file_selected
+            self.top_frame, values=self.get_txt_files(), command=self.on_file_selected,state="readonly"
         )
         self.file_dropdown.pack(side="right", padx=10, pady=5)
 
