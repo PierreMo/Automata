@@ -14,8 +14,9 @@ init(autoreset=True)
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-# Default directory for .txt and .png files
+# Replace the DEFAULT_DIRECTORY line (around line 14)
 DEFAULT_DIRECTORY = os.getcwd()
+AUTOMATA_TXT_DIR = os.path.join(DEFAULT_DIRECTORY, "Automata_txt")
 
 
 class AutomataApp(ctk.CTk):
@@ -23,29 +24,55 @@ class AutomataApp(ctk.CTk):
         super().__init__()
 
         self.title("Automata Project")
-        self.geometry("900x700")  # Larger size for better image display
+        self.geometry("1920x1080")  # Larger size for better image display
         self.center_window(padding_percent=10)
+        # Top container with transparent background
+        self.top_container = ctk.CTkFrame(self, fg_color="transparent")
+        self.top_container.pack(fill="x", padx=100, pady=5)
 
-        # Title
-        self.label_title = ctk.CTkLabel(self, text="AUTOMATA PROJECT", font=("Helvetica", 24, "bold"))
-        self.label_title.pack(pady=10)
-
-        # Top frame (File selection)
-        self.top_frame = ctk.CTkFrame(self)
-        self.top_frame.pack(fill="x", padx=20, pady=10)
-
-        # File selection dropdown
-        self.file_label = ctk.CTkLabel(self.top_frame, text="Sélectionnez un fichier :", font=("Arial", 14))
-        self.file_label.pack(side="left", padx=10, pady=5)
-
-        self.file_dropdown = ctk.CTkComboBox(
-            self.top_frame, values=self.get_txt_files(), command=self.on_file_selected,state="readonly"
+        # Title positioned to the left - now larger and blue
+        self.label_title = ctk.CTkLabel(
+            self.top_container, 
+            text="AUTOMATA PROJECT", 
+            font=("Impact", 80, "bold"),  # Changed to Impact font and increased size
+            text_color="#00BFFF"  # Changed to a brighter blue (Deep Sky Blue)
         )
-        self.file_dropdown.pack(side="right", padx=10, pady=5)
+        self.label_title.pack(side="left", pady=10, padx=10)
+
+        # File selection menu - positioned to the right
+        self.file_menu_frame = ctk.CTkFrame(self.top_container)
+        self.file_menu_frame.pack(side="right", fill=None, expand=False, pady=5)
+        
+        # File selection label
+        self.file_label = ctk.CTkLabel(self.file_menu_frame, text="Sélectionnez un fichier :", font=("Arial", 14))
+        self.file_label.pack(padx=40, pady=(5, 0))
+        
+        # Create a frame to hold the listbox
+        self.file_list_frame = ctk.CTkFrame(self.file_menu_frame)
+        self.file_list_frame.pack(padx=10, pady=5)
+        
+        # Create the scrollable frame - RÉDUIT LA HAUTEUR
+        self.file_listbox = ctk.CTkScrollableFrame(self.file_list_frame, width=300, height=100)
+        self.file_listbox.pack(fill="both", expand=True)
+
+        # Add files to the listbox as buttons - RÉDUIT LA HAUTEUR DES BOUTONS
+        self.file_buttons = []
+        for file in self.get_txt_files():
+            button = ctk.CTkButton(
+                self.file_listbox, 
+                text=file,
+                command=lambda f=file: self.on_file_selected(f),
+                anchor="w",
+                height=25,
+                fg_color="transparent",  # Make it look like a list item
+                hover_color=("gray70", "gray30")  # Light hover effect
+            )
+            button.pack(fill="x", pady=1)
+            self.file_buttons.append(button)
 
         # Main frame (File content, Image display, Automata table)
         self.main_frame = ctk.CTkFrame(self)
-        self.main_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        self.main_frame.pack(fill="both", expand=True, padx=20, pady=5)  # Réduit le pady de 10 à 5
 
         # Left column: File content display
         self.textbox = ctk.CTkTextbox(self.main_frame, height=150, wrap="word", font=("Courier", 16))
@@ -67,11 +94,44 @@ class AutomataApp(ctk.CTk):
 
         # Buttons frame
         self.button_frame = ctk.CTkFrame(self)
-        self.button_frame.pack(pady=10, fill="x", padx=20)
+        self.button_frame.pack(pady=5, fill="x", padx=20)  # Réduit le pady de 10 à 5
+
+        # Word recognition frame
+        self.word_frame = ctk.CTkFrame(self.button_frame)
+        self.word_frame.pack(side="left", expand=True, fill="x", padx=5, pady=5)
+        
+        self.word_label = ctk.CTkLabel(self.word_frame, text="Test word:", font=("Arial", 12))
+        self.word_label.pack(side="left", padx=5)
+        
+        self.word_entry = ctk.CTkEntry(self.word_frame, width=100)
+        self.word_entry.pack(side="left", padx=(5, 2))  # Added 2px right padding for small space
+        
+        self.test_button = ctk.CTkButton(self.word_frame, text="🔍 Test", command=self.test_word)
+        self.test_button.pack(side="left", padx=(0, 5))
+        
+        # Change the word_frame to have transparent background
+        self.word_frame.configure(fg_color="transparent")
+        
+        # Create a subframe with background just for the entry and button
+        self.word_input_frame = ctk.CTkFrame(self.word_frame)
+        self.word_input_frame.pack(side="left", pady=5)
+        
+        # Move the entry and button to this new subframe
+        self.word_entry.pack_forget()
+        self.test_button.pack_forget()
+        
+        self.word_entry = ctk.CTkEntry(self.word_input_frame, width=100)
+        self.word_entry.pack(side="left", padx=(5, 2))
+        
+        self.test_button = ctk.CTkButton(self.word_input_frame, text="🔍 Test", command=self.test_word)
+        self.test_button.pack(side="left", padx=(2, 5))
 
         self.determinize_button = ctk.CTkButton(self.button_frame, text="⚙ Déterminiser", command=self.determinize)
         self.determinize_button.pack(side="left", expand=True, padx=5, pady=5)
-
+        
+        self.standardize_button = ctk.CTkButton(self.button_frame, text="📐 Standardiser", command=self.standardize)
+        self.standardize_button.pack(side="left", expand=True, padx=5, pady=5)
+        
         self.minimize_button = ctk.CTkButton(self.button_frame, text="🔧 Minimiser", command=self.minimize)
         self.minimize_button.pack(side="right", expand=True, padx=5, pady=5)
 
@@ -79,8 +139,9 @@ class AutomataApp(ctk.CTk):
         self.result_label = ctk.CTkLabel(self, text="Résultats :", font=("Arial", 16, "bold"))
         self.result_label.pack(pady=5)
 
-        self.result_textbox = ctk.CTkTextbox(self, height=200, wrap="word", font=("Courier", 14))
-        self.result_textbox.pack(pady=5, fill="both", padx=20)
+        # AUGMENTÉ LA HAUTEUR DE LA ZONE DE RÉSULTATS
+        self.result_textbox = ctk.CTkTextbox(self, height=300, wrap="word", font=("Courier", 14))
+        self.result_textbox.pack(pady=5, fill="both", expand=True, padx=20)
 
         self.selected_file = None  # Stores selected file
 
@@ -93,23 +154,48 @@ class AutomataApp(ctk.CTk):
         window_height = self.winfo_height()
 
         # Calculate padding in pixels
-        x_padding = int(screen_width * (padding_percent / 100))
-        y_padding = int(screen_height * (padding_percent / 100))
+        x_padding = 20
+        y_padding = 20  
 
         # Centered position with padding
         x_position = (screen_width - window_width) // 2 - x_padding
         y_position = (screen_height - window_height) // 2 - y_padding
 
-        self.geometry(f"+{x_position}+{y_position}")
-
+        self.geometry(f"+{x_padding}+{y_padding}")
+        
     def get_txt_files(self):
-        """List available .txt files in the directory"""
-        return [f for f in os.listdir(DEFAULT_DIRECTORY) if f.endswith(".txt")]
+        """List available .txt files in the Automata_txt directory and sort them numerically"""
+        automata_dir = os.path.join(DEFAULT_DIRECTORY, "Automata_txt")
+        if not os.path.exists(automata_dir):
+            messagebox.showwarning("Warning", f"Directory not found: {automata_dir}")
+            return []
+        
+        # Get all text files
+        files = [f for f in os.listdir(automata_dir) if f.endswith(".txt")]
+        
+        # Sort files numerically by extracting the number from automata_X.txt
+        def get_file_number(filename):
+            try:
+                # Extract the number between 'automata_' and '.txt'
+                return int(filename.split('_')[1].split('.')[0])
+            except (IndexError, ValueError):
+                return float('inf')  # Put files without proper numbering at the end
+        
+        # Sort files by their numeric value
+        files.sort(key=get_file_number)
+        return files
 
     def on_file_selected(self, selected_file):
         """Load the selected file, display its content, associated image, and automata table"""
         if selected_file:
-            self.selected_file = os.path.join(DEFAULT_DIRECTORY, selected_file)
+            # Highlight the selected file button
+            for button in self.file_buttons:
+                if button.cget("text") == selected_file:
+                    button.configure(fg_color=("gray75", "gray25"))
+                else:
+                    button.configure(fg_color="transparent")
+                    
+            self.selected_file = os.path.join(AUTOMATA_TXT_DIR, selected_file)
             self.display_file_content(self.selected_file)
             self.display_automata_image(selected_file)
             # Load automata and display its table in the third column
@@ -138,7 +224,7 @@ class AutomataApp(ctk.CTk):
 
         if os.path.exists(image_path):
             img = Image.open(image_path)
-
+            
             # Get frame dimensions
             frame_width = self.image_frame.winfo_width()
             frame_height = self.image_frame.winfo_height()
@@ -165,6 +251,47 @@ class AutomataApp(ctk.CTk):
         result = output_buffer.getvalue()
         output_buffer.close()
         return result
+
+    def test_word(self):
+        """Test if a word is recognized by the automaton"""
+        if not self.selected_file:
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
+            return
+
+        word = self.word_entry.get().strip()
+        if not word:
+            messagebox.showerror("Erreur", "Veuillez entrer un mot à tester.")
+            return
+
+        self.result_textbox.delete("1.0", "end")
+        self.result_textbox.insert("1.0", f"🔍 Test du mot '{word}'...\n")
+
+        try:
+            A = Automata.from_file(self.selected_file)
+            # Capture print statements from recognize_word method
+            output_buffer = io.StringIO()
+            sys.stdout = output_buffer
+            
+            result = A.recognize_word(word)
+            
+            sys.stdout = sys.__stdout__
+            debug_output = output_buffer.getvalue()
+            output_buffer.close()
+            
+            # Display the result with an appropriate emoji
+            if result:
+                self.result_textbox.insert("end", f"\n✅ Le mot '{word}' est reconnu par l'automate.\n")
+            else:
+                self.result_textbox.insert("end", f"\n❌ Le mot '{word}' n'est PAS reconnu par l'automate.\n")
+            
+            # Add debug output if there is any
+            if debug_output:
+                self.result_textbox.insert("end", f"\n🔧 Détails de l'exécution:\n{debug_output}")
+                
+        except Exception as e:
+            sys.stdout = sys.__stdout__  # Make sure to reset stdout
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
 
     def determinize(self):
         """Perform determinization and display the result"""
@@ -201,6 +328,33 @@ class AutomataApp(ctk.CTk):
         except Exception as e:
             messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
 
+    def standardize(self):
+        """Perform standardization and display the result"""
+        if not self.selected_file:
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
+            return
+
+        self.result_textbox.delete("1.0", "end")
+        self.result_textbox.insert("1.0", f"📐 Standardisation en cours...\n")
+
+        try:
+            A1 = Automata.from_file(self.selected_file)
+            
+            # Check if already standard
+            if A1.is_standard():
+                self.result_textbox.insert("end", "\n✅ L'automate est déjà standardisé.\n")
+                result = self.capture_stdout(A1.printCDFA)
+                self.result_textbox.insert("end", "\nAutomate standardisé :\n" + result)
+                return
+                
+            # Standardize the automaton
+            A1.standardize()
+            result = self.capture_stdout(A1.printCDFA)
+            self.result_textbox.insert("end", "\n✅ Après standardisation :\n" + result)
+        except Exception as e:
+            sys.stdout = sys.__stdout__  # Make sure to reset stdout
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
 
 if __name__ == "__main__":
     app = AutomataApp()
