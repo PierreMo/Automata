@@ -12,5 +12,6 @@ Our code allow to
 - Obtain a minimized FA of another
 - Know if a given word is recognized by an FA
 - Create the complentary automata of another
+- Additional features: writing automatas in file, creating automatas with methods
 
 Our Project do NOT deal with Asynchronous automatas
