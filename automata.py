@@ -258,10 +258,10 @@ class Automata:
         else:
             # Ensuring that it is deterministic to treat the problem easily
             if self.is_complete_DFA(True) == CDFA:
-                print("il est deter")
+                print("The automata is deterministic")
                 return self.recursive_word_recognition(word, 0)
             else:
-                print("il est pas")
+                print("The automata is not deterministic, we will based us on it's determinized version:")
                 A = self.determinize_complete()
                 A.printCDFA()
                 return A.recursive_word_recognition(word, 0)
