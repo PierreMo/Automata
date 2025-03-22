@@ -59,7 +59,7 @@ class AutomataTextMenu:
         os.system('cls' if os.name == 'nt' else 'clear')
         print("\n===== AUTOMATA PROJECT - TEXT MENU =====\n")
         print("1. Select an automaton from 1 to 44")
-        print("2. Test a word")
+        print("2. Testing words")
         print("3. Determinize the automaton")
         print("4. Standardize the automaton")
         print("5. Minimize the automaton")
@@ -141,34 +141,36 @@ class AutomataTextMenu:
             print("❌ Please select an automaton first.")
             return
             
-        word = input("\nEnter a word to test: ").strip()
-        if not word:
-            print("❌ Please enter a word.")
-            return
-            
-        print(f"\n🔍 Testing word '{word}'...")
-            
-        try:
-            output_buffer = io.StringIO()
-            sys.stdout = output_buffer
-            
-            result = self.current_Automata.recognize_word(word)
-            
-            sys.stdout = sys.__stdout__
-            debug_output = output_buffer.getvalue()
-            output_buffer.close()
-            
-            if result:
-                print(f"\n✅ The word '{word}' is recognized by the automaton.")
-            else:
-                print(f"\n❌ The word '{word}' is NOT recognized by the automaton.")
-            
-            if debug_output:
-                print(f"\n🔧 Execution details:\n{debug_output}")
-                
-        except Exception as e:
-            sys.stdout = sys.__stdout__
-            print(f"\n❌ Error: {str(e)}")
+        word = input("\nEnter a word to test (\"end\"to stop testing): ").strip()
+        while word!="end":
+            if not word:
+                print("❌ Please enter a word.")
+                return
+
+            print(f"\n🔍 Testing word '{word}'...")
+
+            try:
+                output_buffer = io.StringIO()
+                sys.stdout = output_buffer
+
+                result = self.current_Automata.recognize_word(word)
+
+                sys.stdout = sys.__stdout__
+                debug_output = output_buffer.getvalue()
+                output_buffer.close()
+
+                if result:
+                    print(f"\n✅ The word '{word}' is recognized by the automaton.")
+                else:
+                    print(f"\n❌ The word '{word}' is NOT recognized by the automaton.")
+
+                if debug_output:
+                    print(f"\n🔧 Execution details:\n{debug_output}")
+
+            except Exception as e:
+                sys.stdout = sys.__stdout__
+                print(f"\n❌ Error: {str(e)}")
+            word = input("\nEnter a word to test (\"end\"to stop testing): ").strip()
     
     def determinize(self):
         """Perform determinization and display the result."""
