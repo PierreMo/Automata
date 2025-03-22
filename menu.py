@@ -539,8 +539,8 @@ class AutomataApp(ctk.CTk):
     def display_automata_image(self, txt_filename):
         is_complement = "_complement" in txt_filename
         if is_complement:
-            blank_width = self.image_frame.winfo_width() or 600
-            blank_height = self.image_frame.winfo_height() or 500
+            blank_width = 500
+            blank_height = 300
             blank_img = Image.new("RGB", (blank_width, blank_height), color=(0, 0, 0))
             self.photo = ctk.CTkImage(light_image=blank_img, dark_image=blank_img, size=(blank_width, blank_height))
             self.image_label.configure(
