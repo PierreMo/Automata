@@ -21,6 +21,8 @@ class AutomataTextMenu:
     def __init__(self):
         self.selected_file = None
         self.created_complement_files = []
+        self.current_Automata = None
+        self.current_Automata_name = None
         print("\n===== AUTOMATA PROJECT - TEXT MENU =====\n")
     
     def run(self):
@@ -67,7 +69,7 @@ class AutomataTextMenu:
         print("9. Exit")
         
         if self.selected_file:
-            print(f"\nCurrent automaton: {os.path.basename(self.selected_file)}")
+            print(f"\nCurrent automaton: {self.current_Automata_name}")
     
     def select_automaton(self):
         files = self.get_txt_files()
@@ -87,6 +89,8 @@ class AutomataTextMenu:
                 self.selected_file = os.path.join(AUTOMATA_TXT_DIR, selected)
                 self.display_file_content(self.selected_file)
                 print(f"\n✅ Automaton '{selected}' selected.")
+                self.current_Automata = Automata.from_file(self.selected_file)
+                self.current_Automata_name = selected
             else:
                 print("❌ Invalid number.")
         except ValueError:
@@ -145,11 +149,10 @@ class AutomataTextMenu:
         print(f"\n🔍 Testing word '{word}'...")
             
         try:
-            A = Automata.from_file(self.selected_file)
             output_buffer = io.StringIO()
             sys.stdout = output_buffer
             
-            result = A.recognize_word(word)
+            result = self.current_Automata.recognize_word(word)
             
             sys.stdout = sys.__stdout__
             debug_output = output_buffer.getvalue()
@@ -173,12 +176,10 @@ class AutomataTextMenu:
             print("❌ Please select an automaton first.")
             return
             
-        print(f"\n📌 Loading automaton from {self.selected_file}...")
-            
         try:
-            A1 = Automata.from_file(self.selected_file)
-            A2 = A1.determinize_complete()
-            result = self.capture_stdout(A2.printCDFA)
+            self.current_Automata = self.current_Automata.determinize_complete()
+            self.current_Automata_name += " -> Deteminized"
+            result = self.capture_stdout(self.current_Automata.printCDFA)
             print("\n✔ After complete determinization:\n" + result)
         except Exception as e:
             print(f"\n❌ Error: {str(e)}")
@@ -191,16 +192,16 @@ class AutomataTextMenu:
         print(f"\n📐 Standardizing...")
             
         try:
-            A1 = Automata.from_file(self.selected_file)
             
-            if A1.is_standard():
+            if self.current_Automata.is_standard():
                 print("\n✅ The automaton is already standardized.")
-                result = self.capture_stdout(A1.printCDFA)
+                result = self.capture_stdout(self.current_Automata.printCDFA)
                 print("\nStandardized automaton:\n" + result)
                 return
                 
-            A1.standardize()
-            result = self.capture_stdout(A1.printCDFA)
+            self.current_Automata = self.current_Automata.standardize()
+            self.current_Automata_name += " -> Standardized"
+            result = self.capture_stdout(self.current_Automata.printCDFA)
             print("\n✅ After standardization:\n" + result)
         except Exception as e:
             sys.stdout = sys.__stdout__
@@ -214,10 +215,11 @@ class AutomataTextMenu:
         print(f"\n🔧 Minimizing...")
             
         try:
-            A1 = Automata.from_file(self.selected_file)
-            A2 = A1.determinize_complete()
-            A3 = A2.minimization()
-            result = self.capture_stdout(A3.printCDFA)
+            self.current_Automata = self.current_Automata.determinize_complete()
+            self.current_Automata_name += " -> Deteminized"
+            self.current_Automata = self.current_Automata.minimization()
+            self.current_Automata_name += " -> Minimized"
+            result = self.capture_stdout(self.current_Automata.print_minimized)
             print("\n✔ After minimization:\n" + result)
         except Exception as e:
             print(f"\n❌ Error: {str(e)}")
@@ -230,8 +232,9 @@ class AutomataTextMenu:
         print(f"\n🔄 Creating complementary automaton...")
             
         try:
-            A1 = Automata.from_file(self.selected_file)
-            complementary = A1.complementary_automata()
+            complementary = self.current_Automata.complementary_automata()
+            self.current_Automata = complementary
+            self.current_Automata_name += " -> Complementary"
             result = self.capture_stdout(complementary.printCDFA)
             print("\n✅ Complementary automaton created:\n" + result)
             
@@ -560,7 +563,7 @@ class AutomataApp(ctk.CTk):
             frame_height = self.image_frame.winfo_height()
             
             MAX_WIDTH = 600
-            MAX_HEIGHT = 500
+            MAX_HEIGHT = 350
             
             img_width, img_height = img.size
             width_ratio = MAX_WIDTH / img_width if img_width > MAX_WIDTH else 1
