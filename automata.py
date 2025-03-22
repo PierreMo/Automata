@@ -1,4 +1,3 @@
-import csv
 from collections import deque
 from state import State, ALPH, LETTER_ID
 
@@ -12,7 +11,6 @@ MAX_STATE_NB_EXPECTED = 30
 
 class Automata:
     def __init__(self, alph_size: int, nb_states: int):
-        # TODO MAKE IT STRONGER
         self.__alph_size = alph_size
         self.__nb_states = nb_states
         self.__states = [State(self.__alph_size,i) for i in range(self.__nb_states)]
@@ -121,15 +119,17 @@ class Automata:
                 - -2 if deterministic but not complete (first problematic state will be printed) (
         '''
         if self.__is_deter and self.__is_complete:
+            # if the Automata is already CDFA (haven't be changed since last check)
             return True
         else:
-            #
+            # if it has more than one entry it is not a deterministic one
             if self.get_nb_in_states() != 1:
                 if not silent_mode: print('Algorithm isn\'t CDFA: it is not a deterministic one.')
                 return NOT_DETERM_INPUT
             #
             is_complete = True
             cur_state_id = 0
+            # Checking how many states are in all destinations, acting in consequence
             while is_complete and cur_state_id < self.get_nb_states():
                 cur_alph_id = 0
                 while is_complete and cur_alph_id < self.get_alph_size():
@@ -146,6 +146,7 @@ class Automata:
                         is_complete = False
                     cur_alph_id += 1
                 cur_state_id += 1
+            # Updating the Automata based on results
             if is_complete:
                 self.__is_deter = True
                 self.__is_complete = True
@@ -258,10 +259,10 @@ class Automata:
         else:
             # Ensuring that it is deterministic to treat the problem easily
             if self.is_complete_DFA(True) == CDFA:
-                print("L'automate est determinisé")
+                print("The automata is deterministic")
                 return self.recursive_word_recognition(word, 0)
             else:
-                print("L'automate n'est pas determinisé")
+                print("The automata is not deterministic, we will based us on it's determinized version:")
                 A = self.determinize_complete()
                 A.printCDFA()
                 return A.recursive_word_recognition(word, 0)
@@ -401,9 +402,10 @@ class Automata:
             print(f"| {formatted_row} |")
         print(border)
 
-    def _str_label_list(self, minim:bool=False) -> list:
+    def _str_label_list(self, minim:bool = False) -> list:
         '''
         Method to display the state with print()
+        :return list: matrix corresponding to the display in a table of the Automata
         '''
 
         row = self.get_nb_states() + 1
@@ -706,18 +708,7 @@ class Automata:
 
 
 
-## TESTS FOR Minimization ##
 
-paths = ['test.txt', 'automata1.txt', 'automata2.txt']
-
-# A1 = Automata.from_file(paths[2])
-# print(A1)
-# A2 = A1.determinize_complete()
-# print("After determinize_complete")
-# A2.printCDFA()
-# A3 = A2.minimization()
-# print("After Minimization")
-# A3.print_minimized()
 
 
 
