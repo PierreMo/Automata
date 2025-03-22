@@ -661,7 +661,7 @@ class AutomataApp(ctk.CTk):
             A1 = Automata.from_file(self.selected_file)
             A2 = A1.determinize_complete()
             A3 = A2.minimization()
-            result = self.capture_stdout(A3.printCDFA)
+            result = self.capture_stdout(A3.print_minimized)
             self.result_textbox.insert("end", "\n✔ After minimization:\n" + result)
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {str(e)}")
