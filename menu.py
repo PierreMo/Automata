@@ -14,13 +14,13 @@ init(autoreset=True)
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-# Set DEFAULT_DIRECTORY (around line 14)
+# Replace the DEFAULT_DIRECTORY line (around line 14)
 DEFAULT_DIRECTORY = os.getcwd()
 AUTOMATA_TXT_DIR = os.path.join(DEFAULT_DIRECTORY, "Automata_txt")
 
 
 class AutomataTextMenu:
-    """Class for a text-based menu interface for automata operations"""
+    """Class for text-based menu interface for automata operations"""
     
     def __init__(self):
         self.selected_file = None
@@ -28,10 +28,10 @@ class AutomataTextMenu:
         print("\n===== AUTOMATA PROJECT - TEXT MENU =====\n")
     
     def run(self):
-        """Run the text menu in a loop until the user exits"""
+        """Run the text menu in a loop until user exits"""
         while True:
             self.display_main_menu()
-            choice = input("\nChoose an option (1-9): ")
+            choice = input("\nChoisissez une option (1-9): ")
             
             if choice == '1':
                 self.select_automaton()
@@ -53,57 +53,57 @@ class AutomataTextMenu:
                 self.handle_exit()
                 break
             else:
-                print("❌ Invalid option, please try again.")
+                print("❌ Option invalide, veuillez réessayer.")
             
-            input("\nPress Enter to continue...")
+            input("\nAppuyez sur Entrée pour continuer...")
     
     def display_main_menu(self):
         """Display the main menu options"""
         os.system('cls' if os.name == 'nt' else 'clear')
         print("\n===== AUTOMATA PROJECT - TEXT MENU =====\n")
-        print("1. Select an automaton from 1 to 44")
-        print("2. Test a word")
-        print("3. Determinize the automaton")
-        print("4. Standardize the automaton")
-        print("5. Minimize the automaton")
-        print("6. Create the complementary automaton")
-        print("7. Check properties")
-        print("8. Display the current automaton")
-        print("9. Quit")
+        print("1. Sélectionner un automate de 1 à 44")
+        print("2. Tester un mot")
+        print("3. Déterminiser l'automate")
+        print("4. Standardiser l'automate")
+        print("5. Minimiser l'automate")
+        print("6. Créer l'automate complémentaire")
+        print("7. Vérifier les propriétés")
+        print("8. Afficher l'automate courant")
+        print("9. Quitter")
         
         # Show current automaton if selected
         if self.selected_file:
-            print(f"\nCurrent automaton: {os.path.basename(self.selected_file)}")
+            print(f"\nAutomate actuel: {os.path.basename(self.selected_file)}")
     
     def select_automaton(self):
         """Let the user select an automaton from available files"""
         files = self.get_txt_files()
         
         if not files:
-            print("❌ No automata file found.")
+            print("❌ Aucun fichier d'automate trouvé.")
             return
         
-        print("\n=== Available Automata ===\n")
+        print("\n=== Automates disponibles ===\n")
         for i, file in enumerate(files, 1):
             print(f"{i}. {os.path.splitext(file)[0]}")
         
         try:
-            choice = int(input("\nChoose an automaton (number): "))
+            choice = int(input("\nChoisissez un automate (numéro): "))
             if 1 <= choice <= len(files):
-                selected = files[choice - 1]
+                selected = files[choice-1]
                 self.selected_file = os.path.join(AUTOMATA_TXT_DIR, selected)
                 self.display_file_content(self.selected_file)
-                print(f"\n✅ Automaton '{selected}' selected.")
+                print(f"\n✅ Automate '{selected}' sélectionné.")
             else:
-                print("❌ Invalid number.")
+                print("❌ Numéro invalide.")
         except ValueError:
-            print("❌ Please enter a valid number.")
+            print("❌ Veuillez entrer un numéro valide.")
     
     def get_txt_files(self):
         """List available .txt files in the Automata_txt directory and sort them numerically"""
         automata_dir = os.path.join(DEFAULT_DIRECTORY, "Automata_txt")
         if not os.path.exists(automata_dir):
-            print(f"⚠️ Directory not found: {automata_dir}")
+            print(f"⚠️ Répertoire non trouvé: {automata_dir}")
             return []
         
         # Get all text files
@@ -124,41 +124,41 @@ class AutomataTextMenu:
         try:
             with open(file_path, "r", encoding="utf-8") as file:
                 content = file.read()
-            print("\n=== File Content ===\n")
+            print("\n=== Contenu du fichier ===\n")
             print(content)
         except Exception as e:
-            print(f"❌ Unable to read the file: {str(e)}")
+            print(f"❌ Impossible de lire le fichier : {str(e)}")
     
     def display_current_automaton(self):
         """Display the current automaton details"""
         if not self.selected_file:
-            print("❌ No automaton selected.")
+            print("❌ Aucun automate sélectionné.")
             return
             
         try:
             A = Automata.from_file(self.selected_file)
-            print("\n=== Current Automaton ===\n")
-            print(f"File: {os.path.basename(self.selected_file)}")
+            print("\n=== Automate courant ===\n")
+            print(f"Fichier: {os.path.basename(self.selected_file)}")
             
             # Capture and display automaton table
             table_output = self.capture_stdout(A.printCDFA)
             print("\n" + table_output)
             
         except Exception as e:
-            print(f"❌ Error: {str(e)}")
+            print(f"❌ Erreur: {str(e)}")
     
     def test_word(self):
         """Test if a word is recognized by the automaton"""
         if not self.selected_file:
-            print("❌ Please select an automaton first.")
+            print("❌ Veuillez d'abord sélectionner un automate.")
             return
             
-        word = input("\nEnter a word to test: ").strip()
+        word = input("\nEntrez un mot à tester: ").strip()
         if not word:
-            print("❌ Please enter a word to test.")
+            print("❌ Veuillez entrer un mot à tester.")
             return
             
-        print(f"\n🔍 Testing the word '{word}'...")
+        print(f"\n🔍 Test du mot '{word}'...")
             
         try:
             A = Automata.from_file(self.selected_file)
@@ -174,123 +174,123 @@ class AutomataTextMenu:
             output_buffer.close()
             
             if result:
-                print(f"\n✅ The word '{word}' is recognized by the automaton.")
+                print(f"\n✅ Le mot '{word}' est reconnu par l'automate.")
             else:
-                print(f"\n❌ The word '{word}' is NOT recognized by the automaton.")
+                print(f"\n❌ Le mot '{word}' n'est PAS reconnu par l'automate.")
             
             if debug_output:
-                print(f"\n🔧 Execution details:\n{debug_output}")
+                print(f"\n🔧 Détails de l'exécution:\n{debug_output}")
                 
         except Exception as e:
             sys.stdout = sys.__stdout__
-            print(f"\n❌ Error: {str(e)}")
+            print(f"\n❌ Erreur: {str(e)}")
     
     def determinize(self):
         """Perform determinization and display the result"""
         if not self.selected_file:
-            print("❌ Please select an automaton first.")
+            print("❌ Veuillez d'abord sélectionner un automate.")
             return
             
-        print(f"\n📌 Loading the automaton from {self.selected_file}...")
+        print(f"\n📌 Chargement de l'automate depuis {self.selected_file}...")
             
         try:
             A1 = Automata.from_file(self.selected_file)
             A2 = A1.determinize_complete()
             result = self.capture_stdout(A2.printCDFA)
-            print("\n✔ After complete determinization:\n" + result)
+            print("\n✔ Après déterminisation complète :\n" + result)
         except Exception as e:
-            print(f"\n❌ Error: {str(e)}")
+            print(f"\n❌ Erreur: {str(e)}")
     
     def standardize(self):
         """Perform standardization and display the result"""
         if not self.selected_file:
-            print("❌ Please select an automaton first.")
+            print("❌ Veuillez d'abord sélectionner un automate.")
             return
             
-        print(f"\n📐 Standardization in progress...")
+        print(f"\n📐 Standardisation en cours...")
             
         try:
             A1 = Automata.from_file(self.selected_file)
             
             if A1.is_standard():
-                print("\n✅ The automaton is already standardized.")
+                print("\n✅ L'automate est déjà standardisé.")
                 result = self.capture_stdout(A1.printCDFA)
-                print("\nStandardized automaton:\n" + result)
+                print("\nAutomate standardisé :\n" + result)
                 return
                 
             A1.standardize()
             result = self.capture_stdout(A1.printCDFA)
-            print("\n✅ After standardization:\n" + result)
+            print("\n✅ Après standardisation :\n" + result)
         except Exception as e:
             sys.stdout = sys.__stdout__
-            print(f"\n❌ Error: {str(e)}")
+            print(f"\n❌ Erreur: {str(e)}")
     
     def minimize(self):
         """Perform minimization and display the result"""
         if not self.selected_file:
-            print("❌ Please select an automaton first.")
+            print("❌ Veuillez d'abord sélectionner un automate.")
             return
             
-        print(f"\n🔧 Minimization in progress...")
+        print(f"\n🔧 Minimisation en cours...")
             
         try:
             A1 = Automata.from_file(self.selected_file)
             A2 = A1.determinize_complete()
             A3 = A2.minimization()
             result = self.capture_stdout(A3.printCDFA)
-            print("\n✔ After minimization:\n" + result)
+            print("\n✔ Après minimisation :\n" + result)
         except Exception as e:
-            print(f"\n❌ Error: {str(e)}")
+            print(f"\n❌ Erreur: {str(e)}")
     
     def complementary(self):
-        """Create the complementary automaton"""
+        """Create complementary automaton"""
         if not self.selected_file:
-            print("❌ Please select an automaton first.")
+            print("❌ Veuillez d'abord sélectionner un automate.")
             return
             
-        print(f"\n🔄 Creating the complementary automaton...")
+        print(f"\n🔄 Création de l'automate complémentaire...")
             
         try:
             A1 = Automata.from_file(self.selected_file)
             complementary = A1.complementary_automata()
             result = self.capture_stdout(complementary.printCDFA)
-            print("\n✅ Complementary automaton created:\n" + result)
+            print("\n✅ Automate complémentaire créé :\n" + result)
             
-            save = input("\nDo you want to save the complementary automaton? (y/n): ").lower()
-            if save == 'y' or save == 'yes':
+            save = input("\nVoulez-vous sauvegarder l'automate complémentaire? (o/n): ").lower()
+            if save == 'o' or save == 'oui':
                 base_filename = os.path.basename(self.selected_file)
                 name_without_ext = os.path.splitext(base_filename)[0]
                 save_path = os.path.join(AUTOMATA_TXT_DIR, f"{name_without_ext}_complement.txt")
                 
                 complementary.to_file(save_path)
-                print(f"\n💾 Complementary automaton saved as: {save_path}")
+                print(f"\n💾 Automate complémentaire sauvegardé sous : {save_path}")
                 
                 self.created_complement_files.append(save_path)
         except Exception as e:
-            print(f"\n❌ Error: {str(e)}")
+            print(f"\n❌ Erreur: {str(e)}")
     
     def check_properties(self):
         """Check various properties of the automaton"""
         if not self.selected_file:
-            print("❌ Please select an automaton first.")
+            print("❌ Veuillez d'abord sélectionner un automate.")
             return
             
         try:
             A = Automata.from_file(self.selected_file)
             
-            print("\n=== Checking Properties ===\n")
+            print("\n=== Vérification des propriétés ===\n")
             
             # Check if deterministic
             det_result = A.is_deterministic()
-            print("🔍 Is it deterministic?")
+            print("🔍 Est déterministe?")
             if det_result == DETERMINISTIC:
-                print("   ✅ The automaton is DETERMINISTIC.")
+                print("   ✅ L'automate est DÉTERMINISTE.")
             elif det_result == NOT_DETERM_INPUT:
-                print("   ❌ The automaton is NOT deterministic:")
-                print("      → The automaton must have exactly one initial state.")
-            else:  
-                print("   ❌ The automaton is NOT deterministic:")
-                print("      → A transition has multiple destinations for the same letter.")
+                print("   ❌ L'automate n'est PAS déterministe:")
+                print("      → L'automate doit avoir exactement un état initial.")
+            else:  # NOT_DETERM_TRANSITIONS
+                print("   ❌ L'automate n'est PAS déterministe:")
+                print("      → Une transition a plusieurs destinations pour une même lettre.")
             
             # Check if CDFA
             output_buffer = io.StringIO()
@@ -302,43 +302,43 @@ class AutomataTextMenu:
             debug_output = output_buffer.getvalue()
             output_buffer.close()
             
-            print("\n🔍 Is it a CDFA?")
+            print("\n🔍 Est un CDFA?")
             if cdfa_result == CDFA:
-                print("   ✅ The automaton is a COMPLETE DETERMINISTIC FINITE AUTOMATON.")
+                print("   ✅ L'automate est un AUTOMATE FINI DÉTERMINISTE COMPLET.")
             elif cdfa_result == NOT_DETERM_INPUT:
-                print("   ❌ The automaton is NOT a CDFA:")
-                print("      → The automaton must have exactly one initial state.")
+                print("   ❌ L'automate n'est PAS un CDFA:")
+                print("      → L'automate doit avoir exactement un état initial.")
             elif cdfa_result == NOT_DETERM_TRANSITIONS:
-                print("   ❌ The automaton is NOT a CDFA:")
-                print("      → A transition has multiple destinations for the same letter.")
+                print("   ❌ L'automate n'est PAS un CDFA:")
+                print("      → Une transition a plusieurs destinations pour une même lettre.")
             elif cdfa_result == DETER_NOT_COMPLETE:
-                print("   ❌ The automaton is NOT a CDFA:")
-                print("      → The automaton is deterministic but not complete.")
+                print("   ❌ L'automate n'est PAS un CDFA:")
+                print("      → L'automate est déterministe mais n'est pas complet.")
                 
             if debug_output:
-                print(f"\n      Details: {debug_output}")
+                print(f"\n      Détails : {debug_output}")
             
             # Check if standard
             std_result = A.is_standard()
-            print("\n🔍 Is it standardized?")
+            print("\n🔍 Est standard?")
             if std_result:
-                print("   ✅ The automaton is STANDARD.")
+                print("   ✅ L'automate est STANDARD.")
             else:
-                print("   ❌ The automaton is NOT standardized.")
+                print("   ❌ L'automate n'est PAS standard.")
                 
         except Exception as e:
             sys.stdout = sys.__stdout__
-            print(f"\n❌ Error: {str(e)}")
+            print(f"\n❌ Erreur: {str(e)}")
     
     def capture_stdout(self, func, *args):
-        """Capture the output of functions and return it as text"""
+        """Capture the output of functions and return as text"""
         output_buffer = io.StringIO()
         sys.stdout = output_buffer
         try:
             func(*args)
         except Exception as e:
             sys.stdout = sys.__stdout__
-            return f"❌ Error: {str(e)}"
+            return f"❌ Erreur : {str(e)}"
         sys.stdout = sys.__stdout__
         result = output_buffer.getvalue()
         output_buffer.close()
@@ -347,10 +347,10 @@ class AutomataTextMenu:
     def handle_exit(self):
         """Handle program exit and cleanup"""
         if self.created_complement_files:
-            print(f"\nYou have created {len(self.created_complement_files)} complementary automaton file(s).")
-            delete = input("Do you want to delete them? (y/n): ").lower()
+            print(f"\nVous avez créé {len(self.created_complement_files)} fichiers d'automates complémentaires.")
+            delete = input("Voulez-vous les supprimer? (o/n): ").lower()
             
-            if delete == 'y' or delete == 'yes':
+            if delete == 'o' or delete == 'oui':
                 files_deleted = 0
                 for file_path in self.created_complement_files:
                     try:
@@ -358,74 +358,77 @@ class AutomataTextMenu:
                             os.remove(file_path)
                             files_deleted += 1
                     except Exception as e:
-                        print(f"Error deleting {file_path}: {str(e)}")
+                        print(f"Erreur lors de la suppression de {file_path}: {str(e)}")
                 
-                print(f"{files_deleted} complementary automaton file(s) deleted.")
+                print(f"{files_deleted} fichiers d'automates complémentaires supprimés.")
         
-        print("\nThank you for using Automata Project! Goodbye.")
+        print("\nMerci d'avoir utilisé Automata Project! Au revoir.")
 
 
 class AutomataApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
+        # Add a list to track created complement files
         self.created_complement_files = []
-       
+        
+        # Add protocol to intercept the window close event
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.title("Automata Project")
-        self.geometry("1920x1080") 
+        self.geometry("1920x1080")  # Larger size for better image display
         self.center_window(padding_percent=10)
-        
+        # Top container with transparent background
         self.top_container = ctk.CTkFrame(self, fg_color="transparent")
         self.top_container.pack(fill="x", padx=100, pady=5)
-        self.selected_file = None  
-        self.current_automata = None  
+        self.selected_file = None  # Stores selected file
+        self.current_automata = None  # Stocke l'automate actuel en mémoire
 
-       
+        # Title positioned to the left - now larger and blue
         self.label_title = ctk.CTkLabel(
             self.top_container, 
             text="AUTOMATA PROJECT", 
-            font=("Impact", 80, "bold"),  
-            text_color="#00BFFF"  
+            font=("Impact", 80, "bold"),  # Changed to Impact font and increased size
+            text_color="#00BFFF"  # Changed to a brighter blue (Deep Sky Blue)
         )
         self.label_title.pack(side="left", pady=10, padx=10)
 
-        
+        # File selection menu - positioned to the right
         self.file_menu_frame = ctk.CTkFrame(self.top_container)
         self.file_menu_frame.pack(side="right", fill=None, expand=False, pady=5)
         
-        
-        self.file_label = ctk.CTkLabel(self.file_menu_frame, text="Select a file:", font=("Arial", 14))
+        # File selection label
+        self.file_label = ctk.CTkLabel(self.file_menu_frame, text="Sélectionnez un fichier :", font=("Arial", 14))
         self.file_label.pack(padx=40, pady=(5, 0))
         
+        # Create a frame to hold the listbox
         self.file_list_frame = ctk.CTkFrame(self.file_menu_frame)
         self.file_list_frame.pack(padx=10, pady=5)
         
-        
+        # Create the scrollable frame - RÉDUIT LA HAUTEUR
         self.file_listbox = ctk.CTkScrollableFrame(self.file_list_frame, width=300, height=100)
         self.file_listbox.pack(fill="both", expand=True)
 
-    
+        # Add files to the listbox as buttons - RÉDUIT LA HAUTEUR DES BOUTONS
         self.file_buttons = []
         for file in self.get_txt_files():
-
+            # Display name without .txt extension
             display_name = os.path.splitext(file)[0]
             button = ctk.CTkButton(
                 self.file_listbox, 
                 text=display_name,
-                command=lambda f=file: self.on_file_selected(f), 
+                command=lambda f=file: self.on_file_selected(f),  # Keep full filename for internal use
                 anchor="w",
                 height=25,
-                fg_color="transparent", 
-                hover_color=("gray70", "gray30")  
+                fg_color="transparent",  # Make it look like a list item
+                hover_color=("gray70", "gray30")  # Light hover effect
             )
             button.pack(fill="x", pady=1)
             self.file_buttons.append(button)
 
         # Main frame (File content, Image display, Automata table)
         self.main_frame = ctk.CTkFrame(self)
-        self.main_frame.pack(fill="both", expand=True, padx=20, pady=5)  
+        self.main_frame.pack(fill="both", expand=True, padx=20, pady=5)  # Réduit le pady de 10 à 5
 
         # Left column: File content display
         self.textbox = ctk.CTkTextbox(self.main_frame, height=150, wrap="word", font=("Courier", 16))
@@ -434,7 +437,7 @@ class AutomataApp(ctk.CTk):
         # Middle column: Automata image display
         self.image_frame = ctk.CTkFrame(self.main_frame)
         self.image_frame.pack(side="left", padx=10, pady=5, fill="both", expand=True)
-        self.image_label = ctk.CTkLabel(self.image_frame, text="(No image)")
+        self.image_label = ctk.CTkLabel(self.image_frame, text="(Aucune image)")
         self.image_label.pack(expand=True, fill="both")
 
         # Right column: Automata table display
@@ -447,7 +450,7 @@ class AutomataApp(ctk.CTk):
 
         # Buttons frame
         self.button_frame = ctk.CTkFrame(self)
-        self.button_frame.pack(pady=5, fill="x", padx=20)  
+        self.button_frame.pack(pady=5, fill="x", padx=20)  # Réduit le pady de 10 à 5
 
         # Word recognition frame
         self.word_frame = ctk.CTkFrame(self.button_frame)
@@ -457,19 +460,19 @@ class AutomataApp(ctk.CTk):
         self.word_label.pack(side="left", padx=5)
         
         self.word_entry = ctk.CTkEntry(self.word_frame, width=100)
-        self.word_entry.pack(side="left", padx=(5, 2))  
+        self.word_entry.pack(side="left", padx=(5, 2))  # Added 2px right padding for small space
         
         self.test_button = ctk.CTkButton(self.word_frame, text="🔍 Test", command=self.test_word)
         self.test_button.pack(side="left", padx=(0, 5))
         
-        
+        # Change the word_frame to have transparent background
         self.word_frame.configure(fg_color="transparent")
         
- 
+        # Create a subframe with background just for the entry and button
         self.word_input_frame = ctk.CTkFrame(self.word_frame)
         self.word_input_frame.pack(side="left", pady=5)
         
-    
+        # Move the entry and button to this new subframe
         self.word_entry.pack_forget()
         self.test_button.pack_forget()
         
@@ -479,47 +482,47 @@ class AutomataApp(ctk.CTk):
         self.test_button = ctk.CTkButton(self.word_input_frame, text="🔍 Test", command=self.test_word)
         self.test_button.pack(side="left", padx=(2, 5))
 
-        self.determinize_button = ctk.CTkButton(self.button_frame, text="⚙ Determinize", command=self.determinize)
+        self.determinize_button = ctk.CTkButton(self.button_frame, text="⚙ Déterminiser", command=self.determinize)
         self.determinize_button.pack(side="left", expand=True, padx=5, pady=5)
         
-        self.standardize_button = ctk.CTkButton(self.button_frame, text="📐 Standardize", command=self.standardize)
+        self.standardize_button = ctk.CTkButton(self.button_frame, text="📐 Standardiser", command=self.standardize)
         self.standardize_button.pack(side="left", expand=True, padx=5, pady=5)
         
-        self.minimize_button = ctk.CTkButton(self.button_frame, text="🔧 Minimize", command=self.minimize)
+        self.minimize_button = ctk.CTkButton(self.button_frame, text="🔧 Minimiser", command=self.minimize)
         self.minimize_button.pack(side="right", expand=True, padx=5, pady=5)
 
-        self.complement_button = ctk.CTkButton(self.button_frame, text="🔄 Complementary", command=self.complementary)
+        self.complement_button = ctk.CTkButton(self.button_frame, text="🔄 Complémentaire", command=self.complementary)
         self.complement_button.pack(side="right", expand=True, padx=5, pady=5)
 
-        
+        # Move the verification frame here - BEFORE the results display
         self.check_frame = ctk.CTkFrame(self)
         self.check_frame.pack(pady=5, fill="x", padx=20)
 
-        self.check_label = ctk.CTkLabel(self.check_frame, text="Verifications:", font=("Arial", 14, "bold"))
+        self.check_label = ctk.CTkLabel(self.check_frame, text="Vérifications:", font=("Arial", 14, "bold"))
         self.check_label.pack(side="left", padx=(5, 15))
 
-       
-        self.check_deterministic = ctk.CTkButton(self.check_frame, text="🔍 Is it deterministic?", 
+        # Boutons de vérification
+        self.check_deterministic = ctk.CTkButton(self.check_frame, text="🔍 Est déterministe?", 
                                                 command=self.check_is_deterministic)
         self.check_deterministic.pack(side="left", expand=True, padx=5, pady=5)
 
-        self.check_complete = ctk.CTkButton(self.check_frame, text="🔍 Is it a CDFA?", 
+        self.check_complete = ctk.CTkButton(self.check_frame, text="🔍 Est CDFA?", 
                                         command=self.check_is_complete_dfa)
         self.check_complete.pack(side="left", expand=True, padx=5, pady=5)
 
-        self.check_standard = ctk.CTkButton(self.check_frame, text="🔍 Is it standardized?", 
+        self.check_standard = ctk.CTkButton(self.check_frame, text="🔍 Est standard?", 
                                         command=self.check_is_standard)
         self.check_standard.pack(side="left", expand=True, padx=5, pady=5)
 
-      
-        self.result_label = ctk.CTkLabel(self, text="Results:", font=("Arial", 16, "bold"))
+        # Results display - now AFTER the verification frame
+        self.result_label = ctk.CTkLabel(self, text="Résultats :", font=("Arial", 16, "bold"))
         self.result_label.pack(pady=5)
 
-        
+        # AUGMENTÉ LA HAUTEUR DE LA ZONE DE RÉSULTATS
         self.result_textbox = ctk.CTkTextbox(self, height=300, wrap="word", font=("Courier", 14))
         self.result_textbox.pack(pady=5, fill="both", expand=True, padx=20)
         
-        self.selected_file = None  
+        self.selected_file = None  # Stores selected file
         
     def center_window(self, padding_percent=10):
         """Center the window with a percentage-based padding"""
@@ -529,11 +532,11 @@ class AutomataApp(ctk.CTk):
         window_width = self.winfo_width()
         window_height = self.winfo_height()
 
-      
+        # Calculate padding in pixels
         x_padding = 0
         y_padding = 0
 
-     
+        # Centered position with padding
         x_position = (screen_width - window_width) // 2 - x_padding
         y_position = (screen_height - window_height) // 2 - y_padding
 
@@ -549,21 +552,22 @@ class AutomataApp(ctk.CTk):
         # Get all text files
         files = [f for f in os.listdir(automata_dir) if f.endswith(".txt")]
         
-       
+        # Sort files numerically by extracting the number from automata_X.txt
         def get_file_number(filename):
             try:
-           
+                # Extract the number between 'automata_' and '.txt'
                 return int(filename.split('_')[1].split('.')[0])
             except (IndexError, ValueError):
-                return float('inf')
+                return float('inf')  # Put files without proper numbering at the end
         
+        # Sort files by their numeric value
         files.sort(key=get_file_number)
         return files
 
     def on_file_selected(self, selected_file):
         """Load the selected file, display its content, associated image, and automata table"""
         if selected_file:
-           
+            # Highlight the selected file button - comparing with display names (without .txt)
             selected_display_name = os.path.splitext(selected_file)[0]
             for button in self.file_buttons:
                 if button.cget("text") == selected_display_name:
@@ -574,11 +578,11 @@ class AutomataApp(ctk.CTk):
             self.selected_file = os.path.join(AUTOMATA_TXT_DIR, selected_file)
             self.display_file_content(self.selected_file)
             
-          
+            # Ensure the image frame is sized before displaying the image
             self.update_idletasks()
             self.display_automata_image(selected_file)
             
-          
+            # Load automata and display its table in the third column
             try:
                 A = Automata.from_file(self.selected_file)
                 table_output = self.capture_stdout(A.printCDFA)
@@ -586,7 +590,7 @@ class AutomataApp(ctk.CTk):
                 self.table_textbox.insert("1.0", table_output)
             except Exception as e:
                 self.table_textbox.delete("1.0", "end")
-                self.table_textbox.insert("1.0", f"Error: {str(e)}")
+                self.table_textbox.insert("1.0", f"Erreur: {str(e)}")
 
     def display_file_content(self, file_path):
         """Display the content of the selected file"""
@@ -596,33 +600,30 @@ class AutomataApp(ctk.CTk):
             self.textbox.delete("1.0", "end")
             self.textbox.insert("1.0", content)
         except Exception as e:
-            messagebox.showerror("Error", f"Unable to read the file: {str(e)}")
+            messagebox.showerror("Erreur", f"Impossible de lire le fichier : {str(e)}")
 
     def display_automata_image(self, txt_filename):
         """Resize and display the automaton image to fill the entire frame while keeping proportions"""
-        
         # Check if this is a complementary automata file
         is_complement = "_complement" in txt_filename
         
         if is_complement:
-            
+            # Clear previous image reference
             self.photo = None
             self.image_label.configure(
                 image=None, 
-                text="[Complementary Automaton]\n\nNo image available for\ncomplementary automata",
+                text="[Automate complémentaire]\n\nAucune image disponible pour\nles automates complémentaires",
                 font=("Arial", 16, "bold")
             )
-           
-            self.image_label.image = None
             return
                 
-       
+        # Update the path to use Automata_img folder
         image_path = os.path.join(DEFAULT_DIRECTORY, "Automata_img", txt_filename.replace(".txt", ".png"))
 
         if os.path.exists(image_path):
             img = Image.open(image_path)
             
-          
+            # Get frame dimensions
             frame_width = self.image_frame.winfo_width()
             frame_height = self.image_frame.winfo_height()
             
@@ -635,7 +636,7 @@ class AutomataApp(ctk.CTk):
             width_ratio = MAX_WIDTH / img_width if img_width > MAX_WIDTH else 1
             height_ratio = MAX_HEIGHT / img_height if img_height > MAX_HEIGHT else 1
             
-            # Use the smaller ratio to ensure the image fits within both constraints
+            # Use the smaller ratio to ensure image fits within both constraints
             scale_ratio = min(width_ratio, height_ratio, 1.0)
             
             # Calculate final dimensions
@@ -648,18 +649,22 @@ class AutomataApp(ctk.CTk):
             # Keep a reference to avoid garbage collection
             self.image_label.image = self.photo
         else:
-            self.image_label.configure(image=None, text=f"(Image not found at {image_path})")
+            self.image_label.configure(image=None, text=f"(Image non trouvée à {image_path})")
             print(f"Image not found: {image_path}")
 
+
+
+
+        
     def capture_stdout(self, func, *args):
-        """Capture the output of printCDFA() and return it as text"""
+        """Capture the output of printCDFA() and return as text"""
         output_buffer = io.StringIO()
         sys.stdout = output_buffer
         try:
             func(*args)
         except Exception as e:
             sys.stdout = sys.__stdout__
-            return f"❌ Error: {str(e)}"
+            return f"❌ Erreur : {str(e)}"
         sys.stdout = sys.__stdout__
         result = output_buffer.getvalue()
         output_buffer.close()
@@ -668,20 +673,20 @@ class AutomataApp(ctk.CTk):
     def test_word(self):
         """Test if a word is recognized by the automaton"""
         if not self.selected_file:
-            messagebox.showerror("Error", "Please select a file first.")
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
             return
 
         word = self.word_entry.get().strip()
         if not word:
-            messagebox.showerror("Error", "Please enter a word to test.")
+            messagebox.showerror("Erreur", "Veuillez entrer un mot à tester.")
             return
 
         self.result_textbox.delete("1.0", "end")
-        self.result_textbox.insert("1.0", f"🔍 Testing the word '{word}'...\n")
+        self.result_textbox.insert("1.0", f"🔍 Test du mot '{word}'...\n")
 
         try:
             A = Automata.from_file(self.selected_file)
-            
+            # Capture print statements from recognize_word method
             output_buffer = io.StringIO()
             sys.stdout = output_buffer
             
@@ -691,116 +696,117 @@ class AutomataApp(ctk.CTk):
             debug_output = output_buffer.getvalue()
             output_buffer.close()
             
-          
+            # Display the result with an appropriate emoji
             if result:
-                self.result_textbox.insert("end", f"\n✅ The word '{word}' is recognized by the automaton.\n")
+                self.result_textbox.insert("end", f"\n✅ Le mot '{word}' est reconnu par l'automate.\n")
             else:
-                self.result_textbox.insert("end", f"\n❌ The word '{word}' is NOT recognized by the automaton.\n")
+                self.result_textbox.insert("end", f"\n❌ Le mot '{word}' n'est PAS reconnu par l'automate.\n")
             
-            
+            # Add debug output if there is any
             if debug_output:
-                self.result_textbox.insert("end", f"\n🔧 Execution details:\n{debug_output}")
+                self.result_textbox.insert("end", f"\n🔧 Détails de l'exécution:\n{debug_output}")
                 
         except Exception as e:
-            sys.stdout = sys.__stdout__  
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
-            self.result_textbox.insert("end", f"\n❌ Error: {str(e)}")
+            sys.stdout = sys.__stdout__  # Make sure to reset stdout
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
 
     def determinize(self):
         """Perform determinization and display the result"""
         if not self.selected_file:
-            messagebox.showerror("Error", "Please select a file first.")
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
             return
 
         self.result_textbox.delete("1.0", "end")
-        self.result_textbox.insert("1.0", f"📌 Loading the automaton from {self.selected_file}...\n")
+        self.result_textbox.insert("1.0", f"📌 Chargement de l'automate depuis {self.selected_file}...\n")
 
         try:
             A1 = Automata.from_file(self.selected_file)
             A2 = A1.determinize_complete()
             result = self.capture_stdout(A2.printCDFA)
-            self.result_textbox.insert("end", "\n✔ After complete determinization:\n" + result)
+            self.result_textbox.insert("end", "\n✔ Après déterminisation complète :\n" + result)
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
 
     def minimize(self):
         """Perform minimization and display the result"""
         if not self.selected_file:
-            messagebox.showerror("Error", "Please select a file first.")
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
             return
 
         self.result_textbox.delete("1.0", "end")
-        self.result_textbox.insert("1.0", f"🔧 Minimization in progress...\n")
+        self.result_textbox.insert("1.0", f"🔧 Minimisation en cours...\n")
 
         try:
             A1 = Automata.from_file(self.selected_file)
             A2 = A1.determinize_complete()
             A3 = A2.minimization()
             result = self.capture_stdout(A3.printCDFA)
-            self.result_textbox.insert("end", "\n✔ After minimization:\n" + result)
+            self.result_textbox.insert("end", "\n✔ Après minimisation :\n" + result)
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
 
     def standardize(self):
         """Perform standardization and display the result"""
         if not self.selected_file:
-            messagebox.showerror("Error", "Please select a file first.")
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
             return
 
         self.result_textbox.delete("1.0", "end")
-        self.result_textbox.insert("1.0", f"📐 Standardization in progress...\n")
+        self.result_textbox.insert("1.0", f"📐 Standardisation en cours...\n")
 
         try:
             A1 = Automata.from_file(self.selected_file)
             
-            # Check if already standardized
+            # Check if already standard
             if A1.is_standard():
-                self.result_textbox.insert("end", "\n✅ The automaton is already standardized.\n")
+                self.result_textbox.insert("end", "\n✅ L'automate est déjà standardisé.\n")
                 result = self.capture_stdout(A1.printCDFA)
-                self.result_textbox.insert("end", "\nStandardized automaton:\n" + result)
+                self.result_textbox.insert("end", "\nAutomate standardisé :\n" + result)
                 return
                 
             # Standardize the automaton
             A1.standardize()
             result = self.capture_stdout(A1.printCDFA)
-            self.result_textbox.insert("end", "\n✅ After standardization:\n" + result)
+            self.result_textbox.insert("end", "\n✅ Après standardisation :\n" + result)
         except Exception as e:
-            sys.stdout = sys.__stdout__  # Ensure stdout is reset
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
-            self.result_textbox.insert("end", f"\n❌ Error: {str(e)}")
+            sys.stdout = sys.__stdout__  # Make sure to reset stdout
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
 
     def complementary(self):
         if not self.selected_file:
-            messagebox.showerror("Error", "Please select a file first.")
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
             return
 
         self.result_textbox.delete("1.0", "end")
-        self.result_textbox.insert("1.0", f"🔄 Creating the complementary automaton...\n")
+        self.result_textbox.insert("1.0", f"🔄 Création de l'automate complémentaire...\n")
 
         try:
             A1 = Automata.from_file(self.selected_file)
             complementary = A1.complementary_automata()
             result = self.capture_stdout(complementary.printCDFA)
-            self.result_textbox.insert("end", "\n✅ Complementary automaton created:\n" + result)
+            self.result_textbox.insert("end", "\n✅ Automate complémentaire créé :\n" + result)
             
-         
-            if messagebox.askyesno("Save", "Do you want to save the complementary automaton to a file?"):
-           
+            # Option de sauvegarde
+            if messagebox.askyesno("Sauvegarder", "Voulez-vous sauvegarder l'automate complémentaire dans un fichier?"):
+                # Créer le nom du fichier basé sur l'original
                 base_filename = os.path.basename(self.selected_file)
                 name_without_ext = os.path.splitext(base_filename)[0]
                 save_path = os.path.join(AUTOMATA_TXT_DIR, f"{name_without_ext}_complement.txt")
                 
                 complementary.to_file(save_path)
-                self.result_textbox.insert("end", f"\n💾 Complementary automaton saved as: {save_path}\n")
+                self.result_textbox.insert("end", f"\n💾 Automate complémentaire sauvegardé sous : {save_path}\n")
                 
-              
+                # Track the created complement file
                 self.created_complement_files.append(save_path)
                 
+                # Optionnellement, recharger la liste de fichiers
                 self.refresh_file_list()
                 
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
-            self.result_textbox.insert("end", f"\n❌ Error: {str(e)}")
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
 
     def refresh_file_list(self):
         """Refresh the file list after saving a new automaton"""
@@ -827,42 +833,42 @@ class AutomataApp(ctk.CTk):
 
     def check_is_deterministic(self):
         if not self.selected_file:
-            messagebox.showerror("Error", "Please select a file first.")
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
             return
         
         self.result_textbox.delete("1.0", "end")
-        self.result_textbox.insert("1.0", "🔍 Checking if the automaton is deterministic...\n")
+        self.result_textbox.insert("1.0", "🔍 Vérification si l'automate est déterministe...\n")
         
         try:
             A = Automata.from_file(self.selected_file)
             result = A.is_deterministic()
             
             if result == DETERMINISTIC:
-                self.result_textbox.insert("end", "✅ The automaton is DETERMINISTIC.\n")
+                self.result_textbox.insert("end", "✅ L'automate est DÉTERMINISTE.\n")
             elif result == NOT_DETERM_INPUT:
-                self.result_textbox.insert("end", "❌ The automaton is NOT deterministic:\n")
-                self.result_textbox.insert("end", "   → The automaton must have exactly one initial state.\n")
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS déterministe : \n")
+                self.result_textbox.insert("end", "   → L'automate doit avoir exactement un état initial.\n")
             else:  # result == NOT_DETERM_TRANSITIONS
-                self.result_textbox.insert("end", "❌ The automaton is NOT deterministic:\n")
-                self.result_textbox.insert("end", "   → A transition has multiple destinations for the same letter.\n")
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS déterministe : \n")
+                self.result_textbox.insert("end", "   → Une transition a plusieurs destinations pour une même lettre.\n")
         
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
-            self.result_textbox.insert("end", f"\n❌ Error: {str(e)}")
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
 
     def check_is_complete_dfa(self):
         """Check if the automaton is a complete deterministic finite automaton"""
         if not self.selected_file:
-            messagebox.showerror("Error", "Please select a file first.")
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
             return
         
         self.result_textbox.delete("1.0", "end")
-        self.result_textbox.insert("1.0", "🔍 Checking if the automaton is a CDFA...\n")
+        self.result_textbox.insert("1.0", "🔍 Vérification si l'automate est un CDFA...\n")
         
         try:
             A = Automata.from_file(self.selected_file)
             
-            # Capture any potential output from the function
+            # Capture les sorties potentielles de la fonction
             output_buffer = io.StringIO()
             sys.stdout = output_buffer
             
@@ -873,53 +879,53 @@ class AutomataApp(ctk.CTk):
             output_buffer.close()
             
             if result == CDFA:
-                self.result_textbox.insert("end", "✅ The automaton is a COMPLETE DETERMINISTIC FINITE AUTOMATON.\n")
+                self.result_textbox.insert("end", "✅ L'automate est un AUTOMATE FINI DÉTERMINISTE COMPLET.\n")
             elif result == NOT_DETERM_INPUT:
-                self.result_textbox.insert("end", "❌ The automaton is NOT a CDFA:\n")
-                self.result_textbox.insert("end", "   → The automaton must have exactly one initial state.\n")
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS un CDFA : \n")
+                self.result_textbox.insert("end", "   → L'automate doit avoir exactement un état initial.\n")
             elif result == NOT_DETERM_TRANSITIONS:
-                self.result_textbox.insert("end", "❌ The automaton is NOT a CDFA:\n")
-                self.result_textbox.insert("end", "   → A transition has multiple destinations for the same letter.\n")
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS un CDFA : \n")
+                self.result_textbox.insert("end", "   → Une transition a plusieurs destinations pour une même lettre.\n")
             elif result == DETER_NOT_COMPLETE:
-                self.result_textbox.insert("end", "❌ The automaton is NOT a CDFA:\n")
-                self.result_textbox.insert("end", "   → The automaton is deterministic but not complete.\n")
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS un CDFA : \n")
+                self.result_textbox.insert("end", "   → L'automate est déterministe mais n'est pas complet.\n")
             
-            # Add any debug details if available
+            # Ajouter les détails de debug s'ils existent
             if debug_output:
-                self.result_textbox.insert("end", f"\n🔧 Details:\n{debug_output}")
+                self.result_textbox.insert("end", f"\n🔧 Détails :\n{debug_output}")
         
         except Exception as e:
-            sys.stdout = sys.__stdout__  # Ensure stdout is restored
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
-            self.result_textbox.insert("end", f"\n❌ Error: {str(e)}")
+            sys.stdout = sys.__stdout__  # S'assurer de restaurer stdout
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
 
     def check_is_standard(self):
-        """Check if the automaton is standardized"""
+        """Check if the automaton is standard"""
         if not self.selected_file:
-            messagebox.showerror("Error", "Please select a file first.")
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
             return
         
         self.result_textbox.delete("1.0", "end")
-        self.result_textbox.insert("1.0", "🔍 Checking if the automaton is standardized...\n")
+        self.result_textbox.insert("1.0", "🔍 Vérification si l'automate est standard...\n")
         
         try:
             A = Automata.from_file(self.selected_file)
             result = A.is_standard()
             
             if result:
-                self.result_textbox.insert("end", "✅ The automaton is STANDARD.\n")
+                self.result_textbox.insert("end", "✅ L'automate est STANDARD.\n")
             else:
-                self.result_textbox.insert("end", "❌ The automaton is NOT standardized.\n")
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS standard.\n")
         
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
-            self.result_textbox.insert("end", f"\n❌ Error: {str(e)}")
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
     
     def on_closing(self):
-        """Handle the window closing event by deleting created complementary files"""
+        """Handle window closing event by deleting created complement files"""
         if self.created_complement_files:
             if messagebox.askyesno("Confirmation", 
-                                  f"Do you want to delete the {len(self.created_complement_files)} complementary automaton file(s) created during this session?"):
+                                  f"Voulez-vous supprimer les {len(self.created_complement_files)} fichiers d'automates complémentaires créés pendant cette session?"):
                 files_deleted = 0
                 for file_path in self.created_complement_files:
                     try:
@@ -927,21 +933,21 @@ class AutomataApp(ctk.CTk):
                             os.remove(file_path)
                             files_deleted += 1
                     except Exception as e:
-                        print(f"Error deleting {file_path}: {str(e)}")
+                        print(f"Erreur lors de la suppression de {file_path}: {str(e)}")
                 
-                print(f"{files_deleted} complementary automaton file(s) deleted.")
+                print(f"{files_deleted} fichiers d'automates complémentaires supprimés.")
         
         self.destroy()
 
 
 def main():
-    """Main function to choose the interface mode"""
+    """Main function to choose interface mode"""
     print("=== AUTOMATA PROJECT ===")
-    print("1. Text mode (CLI)")
-    print("2. Graphical mode (GUI)")
+    print("1. Mode texte (CLI)")
+    print("2. Mode graphique (GUI)")
     
     while True:
-        choice = input("\nChoose the interface mode (1 or 2): ")
+        choice = input("\nChoisissez le mode d'interface (1 ou 2): ")
         
         if choice == '1':
             text_menu = AutomataTextMenu()
@@ -952,7 +958,7 @@ def main():
             app.mainloop()
             break
         else:
-            print("❌ Invalid option, please choose 1 or 2.")
+            print("❌ Option invalide, veuillez choisir 1 ou 2.")
 
 
 if __name__ == "__main__":
