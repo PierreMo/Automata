@@ -216,3 +216,17 @@ for path in paths:
     print(A1)
     A2 = A1.complementary_automata()
     print(A2)
+
+
+## TESTS FOR Minimization ##
+
+paths = ['test.txt', 'automata1.txt', 'automata2.txt']
+
+A1 = Automata.from_file(paths[2])
+print(A1)
+A2 = A1.determinize_complete()
+print("After determinize_complete")
+A2.printCDFA()
+A3 = A2.minimization()
+print("After Minimization")
+A3.print_minimized()

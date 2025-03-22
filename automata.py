@@ -258,10 +258,10 @@ class Automata:
         else:
             # Ensuring that it is deterministic to treat the problem easily
             if self.is_complete_DFA(True) == CDFA:
-                print("L'automate est determinisé")
+                print("il est deter")
                 return self.recursive_word_recognition(word, 0)
             else:
-                print("L'automate n'est pas determinisé")
+                print("il est pas")
                 A = self.determinize_complete()
                 A.printCDFA()
                 return A.recursive_word_recognition(word, 0)
@@ -706,18 +706,7 @@ class Automata:
 
 
 
-## TESTS FOR Minimization ##
 
-paths = ['test.txt', 'automata1.txt', 'automata2.txt']
-
-# A1 = Automata.from_file(paths[2])
-# print(A1)
-# A2 = A1.determinize_complete()
-# print("After determinize_complete")
-# A2.printCDFA()
-# A3 = A2.minimization()
-# print("After Minimization")
-# A3.print_minimized()
 
 
 
