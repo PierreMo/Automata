@@ -23,12 +23,20 @@ class AutomataApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
+        # Add a list to track created complement files
+        self.created_complement_files = []
+        
+        # Add protocol to intercept the window close event
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
         self.title("Automata Project")
         self.geometry("1920x1080")  # Larger size for better image display
         self.center_window(padding_percent=10)
         # Top container with transparent background
         self.top_container = ctk.CTkFrame(self, fg_color="transparent")
         self.top_container.pack(fill="x", padx=100, pady=5)
+        self.selected_file = None  # Stores selected file
+        self.current_automata = None  # Stocke l'automate actuel en mémoire
 
         # Title positioned to the left - now larger and blue
         self.label_title = ctk.CTkLabel(
@@ -58,10 +66,12 @@ class AutomataApp(ctk.CTk):
         # Add files to the listbox as buttons - RÉDUIT LA HAUTEUR DES BOUTONS
         self.file_buttons = []
         for file in self.get_txt_files():
+            # Display name without .txt extension
+            display_name = os.path.splitext(file)[0]
             button = ctk.CTkButton(
                 self.file_listbox, 
-                text=file,
-                command=lambda f=file: self.on_file_selected(f),
+                text=display_name,
+                command=lambda f=file: self.on_file_selected(f),  # Keep full filename for internal use
                 anchor="w",
                 height=25,
                 fg_color="transparent",  # Make it look like a list item
@@ -135,16 +145,39 @@ class AutomataApp(ctk.CTk):
         self.minimize_button = ctk.CTkButton(self.button_frame, text="🔧 Minimiser", command=self.minimize)
         self.minimize_button.pack(side="right", expand=True, padx=5, pady=5)
 
-        # Results display
+        self.complement_button = ctk.CTkButton(self.button_frame, text="🔄 Complémentaire", command=self.complementary)
+        self.complement_button.pack(side="right", expand=True, padx=5, pady=5)
+
+        # Move the verification frame here - BEFORE the results display
+        self.check_frame = ctk.CTkFrame(self)
+        self.check_frame.pack(pady=5, fill="x", padx=20)
+
+        self.check_label = ctk.CTkLabel(self.check_frame, text="Vérifications:", font=("Arial", 14, "bold"))
+        self.check_label.pack(side="left", padx=(5, 15))
+
+        # Boutons de vérification
+        self.check_deterministic = ctk.CTkButton(self.check_frame, text="🔍 Est déterministe?", 
+                                                command=self.check_is_deterministic)
+        self.check_deterministic.pack(side="left", expand=True, padx=5, pady=5)
+
+        self.check_complete = ctk.CTkButton(self.check_frame, text="🔍 Est CDFA?", 
+                                        command=self.check_is_complete_dfa)
+        self.check_complete.pack(side="left", expand=True, padx=5, pady=5)
+
+        self.check_standard = ctk.CTkButton(self.check_frame, text="🔍 Est standard?", 
+                                        command=self.check_is_standard)
+        self.check_standard.pack(side="left", expand=True, padx=5, pady=5)
+
+        # Results display - now AFTER the verification frame
         self.result_label = ctk.CTkLabel(self, text="Résultats :", font=("Arial", 16, "bold"))
         self.result_label.pack(pady=5)
 
         # AUGMENTÉ LA HAUTEUR DE LA ZONE DE RÉSULTATS
         self.result_textbox = ctk.CTkTextbox(self, height=300, wrap="word", font=("Courier", 14))
         self.result_textbox.pack(pady=5, fill="both", expand=True, padx=20)
-
+        
         self.selected_file = None  # Stores selected file
-
+        
     def center_window(self, padding_percent=10):
         """Center the window with a percentage-based padding"""
         self.update_idletasks()
@@ -154,8 +187,8 @@ class AutomataApp(ctk.CTk):
         window_height = self.winfo_height()
 
         # Calculate padding in pixels
-        x_padding = 20
-        y_padding = 20  
+        x_padding = 0
+        y_padding = 0
 
         # Centered position with padding
         x_position = (screen_width - window_width) // 2 - x_padding
@@ -188,16 +221,21 @@ class AutomataApp(ctk.CTk):
     def on_file_selected(self, selected_file):
         """Load the selected file, display its content, associated image, and automata table"""
         if selected_file:
-            # Highlight the selected file button
+            # Highlight the selected file button - comparing with display names (without .txt)
+            selected_display_name = os.path.splitext(selected_file)[0]
             for button in self.file_buttons:
-                if button.cget("text") == selected_file:
+                if button.cget("text") == selected_display_name:
                     button.configure(fg_color=("gray75", "gray25"))
                 else:
                     button.configure(fg_color="transparent")
                     
             self.selected_file = os.path.join(AUTOMATA_TXT_DIR, selected_file)
             self.display_file_content(self.selected_file)
+            
+            # Ensure the image frame is sized before displaying the image
+            self.update_idletasks()
             self.display_automata_image(selected_file)
+            
             # Load automata and display its table in the third column
             try:
                 A = Automata.from_file(self.selected_file)
@@ -220,7 +258,8 @@ class AutomataApp(ctk.CTk):
 
     def display_automata_image(self, txt_filename):
         """Resize and display the automaton image to fill the entire frame while keeping proportions"""
-        image_path = os.path.join(DEFAULT_DIRECTORY, txt_filename.replace(".txt", ".png"))
+        # Update the path to use Automata_img folder
+        image_path = os.path.join(DEFAULT_DIRECTORY, "Automata_img", txt_filename.replace(".txt", ".png"))
 
         if os.path.exists(image_path):
             img = Image.open(image_path)
@@ -229,14 +268,12 @@ class AutomataApp(ctk.CTk):
             frame_width = self.image_frame.winfo_width()
             frame_height = self.image_frame.winfo_height()
 
-            # Resize while maintaining aspect ratio but filling the entire space
-            img = ImageOps.contain(img, (frame_width, frame_height))
-
-            self.photo = ImageTk.PhotoImage(img)
+            # Create a CTkImage instead of ImageTk.PhotoImage
+            self.photo = ctk.CTkImage(light_image=img, dark_image=img, size=(frame_width, frame_height))
             self.image_label.configure(image=self.photo, text="")
-            self.image_label.image = self.photo  # Prevent garbage collection
         else:
-            self.image_label.configure(image=None, text="(Aucune image)")
+            self.image_label.configure(image=None, text=f"(Image not found at {image_path})")
+            print(f"Image not found: {image_path}")
 
     def capture_stdout(self, func, *args):
         """Capture the output of printCDFA() and return as text"""
@@ -355,6 +392,171 @@ class AutomataApp(ctk.CTk):
             sys.stdout = sys.__stdout__  # Make sure to reset stdout
             messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
             self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
+
+    def complementary(self):
+        if not self.selected_file:
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
+            return
+
+        self.result_textbox.delete("1.0", "end")
+        self.result_textbox.insert("1.0", f"🔄 Création de l'automate complémentaire...\n")
+
+        try:
+            A1 = Automata.from_file(self.selected_file)
+            complementary = A1.complementary_automata()
+            result = self.capture_stdout(complementary.printCDFA)
+            self.result_textbox.insert("end", "\n✅ Automate complémentaire créé :\n" + result)
+            
+            # Option de sauvegarde
+            if messagebox.askyesno("Sauvegarder", "Voulez-vous sauvegarder l'automate complémentaire dans un fichier?"):
+                # Créer le nom du fichier basé sur l'original
+                base_filename = os.path.basename(self.selected_file)
+                name_without_ext = os.path.splitext(base_filename)[0]
+                save_path = os.path.join(AUTOMATA_TXT_DIR, f"{name_without_ext}_complement.txt")
+                
+                complementary.to_file(save_path)
+                self.result_textbox.insert("end", f"\n💾 Automate complémentaire sauvegardé sous : {save_path}\n")
+                
+                # Track the created complement file
+                self.created_complement_files.append(save_path)
+                
+                # Optionnellement, recharger la liste de fichiers
+                self.refresh_file_list()
+                
+        except Exception as e:
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
+
+    def refresh_file_list(self):
+        """Refresh the file list after saving a new automaton"""
+        # Remove old buttons
+        for button in self.file_buttons:
+            button.destroy()
+        self.file_buttons = []
+        
+        # Add new buttons
+        for file in self.get_txt_files():
+            # Display name without .txt extension
+            display_name = os.path.splitext(file)[0]
+            button = ctk.CTkButton(
+                self.file_listbox, 
+                text=display_name,
+                command=lambda f=file: self.on_file_selected(f),
+                anchor="w",
+                height=25,
+                fg_color="transparent",
+                hover_color=("gray70", "gray30")
+            )
+            button.pack(fill="x", pady=1)
+            self.file_buttons.append(button)
+
+    def check_is_deterministic(self):
+        if not self.selected_file:
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
+            return
+        
+        self.result_textbox.delete("1.0", "end")
+        self.result_textbox.insert("1.0", "🔍 Vérification si l'automate est déterministe...\n")
+        
+        try:
+            A = Automata.from_file(self.selected_file)
+            result = A.is_deterministic()
+            
+            if result == DETERMINISTIC:
+                self.result_textbox.insert("end", "✅ L'automate est DÉTERMINISTE.\n")
+            elif result == NOT_DETERM_INPUT:
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS déterministe : \n")
+                self.result_textbox.insert("end", "   → L'automate doit avoir exactement un état initial.\n")
+            else:  # result == NOT_DETERM_TRANSITIONS
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS déterministe : \n")
+                self.result_textbox.insert("end", "   → Une transition a plusieurs destinations pour une même lettre.\n")
+        
+        except Exception as e:
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
+
+    def check_is_complete_dfa(self):
+        """Check if the automaton is a complete deterministic finite automaton"""
+        if not self.selected_file:
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
+            return
+        
+        self.result_textbox.delete("1.0", "end")
+        self.result_textbox.insert("1.0", "🔍 Vérification si l'automate est un CDFA...\n")
+        
+        try:
+            A = Automata.from_file(self.selected_file)
+            
+            # Capture les sorties potentielles de la fonction
+            output_buffer = io.StringIO()
+            sys.stdout = output_buffer
+            
+            result = A.is_complete_DFA(False)
+            
+            sys.stdout = sys.__stdout__
+            debug_output = output_buffer.getvalue()
+            output_buffer.close()
+            
+            if result == CDFA:
+                self.result_textbox.insert("end", "✅ L'automate est un AUTOMATE FINI DÉTERMINISTE COMPLET.\n")
+            elif result == NOT_DETERM_INPUT:
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS un CDFA : \n")
+                self.result_textbox.insert("end", "   → L'automate doit avoir exactement un état initial.\n")
+            elif result == NOT_DETERM_TRANSITIONS:
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS un CDFA : \n")
+                self.result_textbox.insert("end", "   → Une transition a plusieurs destinations pour une même lettre.\n")
+            elif result == DETER_NOT_COMPLETE:
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS un CDFA : \n")
+                self.result_textbox.insert("end", "   → L'automate est déterministe mais n'est pas complet.\n")
+            
+            # Ajouter les détails de debug s'ils existent
+            if debug_output:
+                self.result_textbox.insert("end", f"\n🔧 Détails :\n{debug_output}")
+        
+        except Exception as e:
+            sys.stdout = sys.__stdout__  # S'assurer de restaurer stdout
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
+
+    def check_is_standard(self):
+        """Check if the automaton is standard"""
+        if not self.selected_file:
+            messagebox.showerror("Erreur", "Veuillez d'abord sélectionner un fichier.")
+            return
+        
+        self.result_textbox.delete("1.0", "end")
+        self.result_textbox.insert("1.0", "🔍 Vérification si l'automate est standard...\n")
+        
+        try:
+            A = Automata.from_file(self.selected_file)
+            result = A.is_standard()
+            
+            if result:
+                self.result_textbox.insert("end", "✅ L'automate est STANDARD.\n")
+            else:
+                self.result_textbox.insert("end", "❌ L'automate n'est PAS standard.\n")
+        
+        except Exception as e:
+            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            self.result_textbox.insert("end", f"\n❌ Erreur: {str(e)}")
+    
+    def on_closing(self):
+        """Handle window closing event by deleting created complement files"""
+        if self.created_complement_files:
+            if messagebox.askyesno("Confirmation", 
+                                  f"Voulez-vous supprimer les {len(self.created_complement_files)} fichiers d'automates complémentaires créés pendant cette session?"):
+                files_deleted = 0
+                for file_path in self.created_complement_files:
+                    try:
+                        if os.path.exists(file_path):
+                            os.remove(file_path)
+                            files_deleted += 1
+                    except Exception as e:
+                        print(f"Erreur lors de la suppression de {file_path}: {str(e)}")
+                
+                print(f"{files_deleted} fichiers d'automates complémentaires supprimés.")
+        
+        self.destroy()
 
 if __name__ == "__main__":
     app = AutomataApp()
